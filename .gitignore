@@ -1,0 +1,13 @@
+#Ignorera privata nycklar
+*.pem
+id_rsa
+id_rsa.pub
+
+#Ignorera Composer-autentisering
+composer.auth.json
+
+#Ignorera miljövariabler
+.env
+.env.local
+
+client_secret.json
