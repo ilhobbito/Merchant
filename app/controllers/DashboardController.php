@@ -42,7 +42,7 @@ class DashboardController
         $client->setAccessToken($_SESSION['access_token']);
 
         $service = new Google_Service_ShoppingContent($client);
-        $merchantId = '5551596487';
+        $merchantId = '';
 
         // Create a dummy product object.
         $product = new Google_Service_ShoppingContent_Product();
@@ -85,7 +85,7 @@ class DashboardController
     public function listProducts(){
 
         $service = new Google_Service_ShoppingContent($this->client);
-        $merchantId = '5551596487';
+        $merchantId = '';
         try {
             // List products for the specified Merchant Center account
             $productsResponse = $service->products->listProducts($merchantId);
