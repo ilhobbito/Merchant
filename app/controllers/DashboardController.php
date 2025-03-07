@@ -3,7 +3,6 @@ namespace App\Controllers;
 
 require '../vendor/autoload.php';
 
-
 use Google_Client;
 use Google_Service_ShoppingContent;
 use Google_Service_ShoppingContent_Product;
@@ -30,7 +29,6 @@ class DashboardController
         }        
     }
 
-
     public function index(){
         require_once '../app/views/dashboard/index.php';
     }
@@ -42,12 +40,12 @@ class DashboardController
         $client->setAccessToken($_SESSION['access_token']);
 
         $service = new Google_Service_ShoppingContent($client);
-        $merchantId = '';
+        $merchantId = ''; // Replace with merchandId
 
         // Create a dummy product object.
         $product = new Google_Service_ShoppingContent_Product();
 
-        // Required fields for the product.
+        // Required fields for the product. Unless name is updated it will just update the product with the same name
         $product->setOfferId("dummy_003");
         $product->setTitle("Dummy Test Product");
         $product->setDescription("This is a dummy product for testing purposes.");
@@ -74,10 +72,10 @@ class DashboardController
             echo "Product added successfully!<br>";
             echo "Product ID: " . $insertedProduct->getId();
             echo "<br><br>It might take some time for the product to show up in the feed, please wait a moment if you don't see it and refresh";
-            echo "<a href='/dashboard'><br>Return</a>";
+            echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         } catch (\Exception $e) {
             echo "An error occurred while adding the product: " . $e->getMessage();
-            echo "<a href='/dashboard'><br>Return</a>";
+            echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         }
     }
 
@@ -85,7 +83,8 @@ class DashboardController
     public function listProducts(){
 
         $service = new Google_Service_ShoppingContent($this->client);
-        $merchantId = '';
+        $merchantId = ''; // Replace with merchandId
+
         try {
             // List products for the specified Merchant Center account
             $productsResponse = $service->products->listProducts($merchantId);
@@ -94,21 +93,19 @@ class DashboardController
             if (!empty($products)) {
                 foreach ($products as $product) {
                     echo "Product ID: " . $product->getId() . "<br>";
-                    // You can display additional product details as needed
                 }
             } else {
                 echo "No products found.";
             }
-            echo "<a href='/dashboard'><br>Return</a>";
+            echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         } catch (Exception $e) {
             echo "An error occurred: " . $e->getMessage();
-            echo "<a href='/dashboard'><br>Return</a>";
+            echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         }
     }
    
-
     public function logout(){
         session_destroy();
-        header('Location: /authentication');
+        header('Location: /Merchant/public/');
     }
 }
