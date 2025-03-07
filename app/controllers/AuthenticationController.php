@@ -13,15 +13,18 @@ class AuthenticationController
     public function __construct()
     {
         $this->client = new Google_Client();
+        $this->client->setPrompt('consent');
         $this->client->setAuthConfig('../client_secret.json');
-        $this->client->setRedirectUri('http://127.0.0.1/authentication/callback');
-        $this->client->addScope('https://www.googleapis.com/auth/content');
+        $this->client->setRedirectUri('http://127.0.0.1/Merchant/public/authentication/callback');
+        $this->client->setScopes(['https://www.googleapis.com/auth/content',  //Google Merchant API
+                                  'https://www.googleapis.com/auth/adwords']); // Google Ads API
         $this->client->setAccessType('offline');
     }
     
     public function index() {
         require_once '../app/views/authentication/login.php';
     }
+
     public function login()
     { 
         $auth_url = $this->client->createAuthUrl();
@@ -32,7 +35,6 @@ class AuthenticationController
 
     public function callback()
     {
-
         session_start();
         if (isset($_GET['code'])) {
             $token = $this->client->fetchAccessTokenWithAuthCode($_GET['code']);
@@ -40,12 +42,12 @@ class AuthenticationController
             file_put_contents('token.json', json_encode($token));
 
             // Redirect to dashboard after successful authentication
-            header('Location: /dashboard');
+            header('Location: /Merchant/public/dashboard');
             exit();
+
         } else {
             echo "Authorization failed!";
         }
     }
-
 
 }

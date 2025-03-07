@@ -11,3 +11,4 @@ composer.auth.json
 .env.local
 
 client_secret.json
+/vendor/
