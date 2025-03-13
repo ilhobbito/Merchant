@@ -13,7 +13,7 @@ use Google\Ads\GoogleAds\Lib\V19\GoogleAdsException;
 use Google\Ads\GoogleAds\V19\Services\ListAccessibleCustomersRequest;
 
 
-class GoogleAdsController{
+class GoogleadsController{
     public function __construct(){
         // Not sure if necessary, will try to remove to check at a later point
         $this->client = new Google_Client();
@@ -21,7 +21,7 @@ class GoogleAdsController{
     }
 
     public function index(){
-        require_once '../app/views/googleads/index.php';
+        require_once __DIR__ . '/../views/googleads/index.php';
     } 
 
     public function apiTest(){
@@ -57,7 +57,7 @@ class GoogleAdsController{
             echo "No developertoken could be retrieved!";
             return;
         }
-        $customer_id = ""; // Replace with client id that has been made through the api
+        $customer_id = " "; // Replace with client id that has been made through the api
         // Uses api to search for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
 
@@ -94,7 +94,7 @@ class GoogleAdsController{
 
     function createTestClient(): void
     {
-        $managerCustomerId = ''; // Replace with manager id that has developer token
+        $managerCustomerId = '7771232397'; // Replace with manager id that has developer token
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
         
         // Build OAuth2 credentials from the OAUTH2 section
@@ -238,7 +238,7 @@ class GoogleAdsController{
                 [
                     "create" => [
                         // Name will conflict if not updated. TODO: Make this into an input variable.
-                        "name" => "Test Campaign Budget",
+                        "name" => "Test Campaign Budget 3",
                         "amountMicros" => "5000000",  // $5 budget since google handles this in micros
                         "deliveryMethod" => "STANDARD"
                     ]
@@ -256,11 +256,10 @@ class GoogleAdsController{
         $curl_error = curl_error($ch);
         curl_close($ch);
     
-        // ✅ Improved error handling
         if ($http_code == 200) {
-            echo "✅ Budget Created Successfully: " . $response;
+            echo "Budget Created Successfully: " . $response;
         } else {
-            echo "❌ Budget Creation Failed! HTTP Code: " . $http_code . "<br>";
+            echo "Budget Creation Failed! HTTP Code: " . $http_code . "<br>";
             if (!empty($curl_error)) {
                 echo "cURL Error: " . $curl_error . "<br>";
             } else {

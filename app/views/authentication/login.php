@@ -6,6 +6,7 @@
 </head>
 <body>
     <h2>Login with Google</h2>
-    <a href="authentication/login">Login</a>
+    <a href="authentication/googleLogin">Google Login</a>
+    <a href="authentication/facebookLogin">Facebook Login</a>
 </body>
 </html>

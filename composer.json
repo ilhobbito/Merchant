@@ -1,6 +1,8 @@
 {
     "require": {
         "google/apiclient": "^2.18",
-        "googleads/google-ads-php": "^26.1"
+        "googleads/google-ads-php": "^26.1",
+        "facebook/graph-sdk": "^5.1",
+        "facebook/php-business-sdk": "^22.0"
     }
 }
