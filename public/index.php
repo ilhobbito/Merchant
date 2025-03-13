@@ -11,12 +11,12 @@ $controllerNameNoNS = ucfirst($url[0]) . 'Controller';
 // Fully qualified class name including the namespace
 $controllerName = 'App\\Controllers\\' . $controllerNameNoNS;
 
+
 $methodName = isset($url[1]) ? $url[1] : 'index';
 $params = array_slice($url, 2);
 
 // Build the controller file path using the name without namespace
 $controllerFile = '../app/controllers/' . $controllerNameNoNS . '.php';
-
 if (file_exists($controllerFile)) {
     require_once $controllerFile;
 

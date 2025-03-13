@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['access_token'])) {
+if (!isset($_SESSION['google_access_token'])) {
     header('Location: /');
     exit();
 }
@@ -15,5 +15,5 @@ if (!isset($_SESSION['access_token'])) {
     <a href="createTestClient">Create Test Client</a><br>
     <a href="apiTest">Test Google Ads API</a><br>
     <a href="setTestBudget">Set Test Budget</a><br>
-    <a href="listAccountsWithLibrary">List accounts</a>
+    <a href="listAccountsWithLibrary">List Accounts</a>
 </body>

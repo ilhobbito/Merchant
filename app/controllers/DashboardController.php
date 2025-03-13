@@ -14,19 +14,34 @@ class DashboardController
 
     public function __construct(){
 
-        if (!isset($_SESSION['access_token'])) {
-            echo "Access token not found. Please authenticate first.";
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // Check if Google token is set
+        if (isset($_SESSION['google_access_token'])) {
+            // Initialize Google client
+            $this->client = new Google_Client();
+            $this->client->setApplicationName('Google-Merchant-API-Test');
+            $this->client->setAccessToken($_SESSION['google_access_token']);
+
+            if ($this->client->isAccessTokenExpired()) {
+                echo "Google access token expired. Please re-authenticate.";
+                exit();
+            }
+        }
+        // Or else if Facebook token is set
+        elseif (isset($_SESSION['fb_access_token'])) {
+            // Possibly initialize Facebook SDK or store the token for FB API calls
+            // e.g., $this->fb = new \Facebook\Facebook([...]);
+            // $this->fb->setDefaultAccessToken($_SESSION['fb_access_token']);
+        }
+        else {
+            // Neither Google nor Facebook token is set
+            echo "No valid access token found. Please authenticate first.";
             exit();
         }
 
-        $this->client = new Google_Client();
-        $this->client->setApplicationName('Google-Merchant-API-Test');
-        $this->client->setAccessToken($_SESSION['access_token']);
-
-        if ($this->client->isAccessTokenExpired()) {
-            echo "Access token expired. Please re-authenticate.";
-            exit();
-        }        
     }
 
     public function index(){
@@ -105,6 +120,8 @@ class DashboardController
     }
    
     public function logout(){
+        unset($_SESSION['google_access_token']);
+        unset($_SESSION['fb_access_token']);
         session_destroy();
         header('Location: /Merchant/public/');
     }
