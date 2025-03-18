@@ -11,4 +11,7 @@ composer.auth.json
 .env.local
 
 client_secret.json
+google_ads_php.ini
+token.json
+fb_token.json
 /vendor/

@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 require '../vendor/autoload.php';
 
+use Dotenv\Dotenv;
 
 use Google_Client;
 
@@ -10,13 +11,26 @@ class AuthenticationController
 {
     private $client;
 
+
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        $dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
+        $dotenv->load();
     }
+    public function buildClient(){
 
+        $appId = $_ENV['FACEBOOK_APP_ID'];
+        $appSecret = $_ENV['FACEBOOK_APP_SECRET'];
+        $fb = new \Facebook\Facebook([
+            'app_id' => $appId, // Replace
+            'app_secret' =>  $appSecret, // Replace
+            'default_graph_version' => 'v22.0',
+        ]);
+        return $fb;
+    }
     
     public function index() {
         require_once '../app/views/authentication/login.php';
@@ -44,17 +58,13 @@ class AuthenticationController
 
     public function facebookLogin()
     {
-        $fb = new \Facebook\Facebook([
-            'app_id' => '1500469780921483',
-            'app_secret' => '47a7df4f77564bf52e559f6c50c093e1',
-            'default_graph_version' => 'v22.0',
-        ]);
+        $fb = $this->buildClient();
 
         $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['email', 'catalog_management', 'business_management'];
+        $permissions = ['email', 'catalog_management', 'business_management', 'ads_management'];
 
         // The callback route for Facebook
-        $callbackUrl = 'https://127.0.0.1/Merchant/public/authentication/facebookCallback';
+        $callbackUrl = 'https://127.0.0.1/Merchant/public/authentication/facebookCallback'; //Replace
 
         $loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
 
@@ -68,7 +78,7 @@ class AuthenticationController
         // Recreate the client here
         $client = new \Google_Client();
         $client->setAuthConfig('../client_secret.json');
-        $client->setRedirectUri('http://127.0.0.1/Merchant/public/authentication/callback');
+        $client->setRedirectUri('http://127.0.0.1/Merchant/public/authentication/callback'); //Replace
         $client->setScopes([
             'https://www.googleapis.com/auth/content',
             'https://www.googleapis.com/auth/adwords'
@@ -94,17 +104,12 @@ class AuthenticationController
             session_start();
         };
         // Initialize the Facebook SDK
-        $fb = new \Facebook\Facebook([
-            'app_id' => '1500469780921483',
-            'app_secret' => '47a7df4f77564bf52e559f6c50c093e1',
-            'default_graph_version' => 'v22.0',
-        ]);
+        $fb = $this->buildClient();
        
         // Get the helper
         $helper = $fb->getRedirectLoginHelper();
         
         try {
-
             // Get the access token from Facebook
             $accessToken = $helper->getAccessToken();
         } catch(\Facebook\Exceptions\FacebookResponseException $e) {
