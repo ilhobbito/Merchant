@@ -14,5 +14,5 @@ client_secret.json
 google_ads_php.ini
 token.json
 fb_token.json
-/vendor/google_ads_php.ini
+/vendor/
 google_ads_php.ini

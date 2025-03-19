@@ -88,8 +88,6 @@ class GoogleadsController{
         } else {
             echo "No campaigns could be found, wich is to be expected since the function for adding them has not yet been added.";
         }
-        
-
     }
 
     function createTestClient(): void
