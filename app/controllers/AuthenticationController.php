@@ -25,8 +25,8 @@ class AuthenticationController
         $appId = $_ENV['FACEBOOK_APP_ID'];
         $appSecret = $_ENV['FACEBOOK_APP_SECRET'];
         $fb = new \Facebook\Facebook([
-            'app_id' => $appId, // Replace
-            'app_secret' =>  $appSecret, // Replace
+            'app_id' => $appId,
+            'app_secret' =>  $appSecret,
             'default_graph_version' => 'v22.0',
         ]);
         return $fb;
@@ -64,7 +64,7 @@ class AuthenticationController
         $permissions = ['email', 'catalog_management', 'business_management', 'ads_management'];
 
         // The callback route for Facebook
-        $callbackUrl = 'https://127.0.0.1/Merchant/public/authentication/facebookCallback'; //Replace
+        $callbackUrl = 'https://127.0.0.1/Merchant/public/authentication/facebookCallback';
 
         $loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
 
