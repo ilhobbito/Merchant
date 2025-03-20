@@ -40,45 +40,6 @@ class FbdashboardController{
         require_once __DIR__ . '/../views/fbdashboard/index.php';
     }
 
-    public function routing(){
-        $cm = new Campaign();
-        $user = new User();
-        $fb = $this->buildClient();
-
-        // if (isset($_GET['value'])) {
-        //     $value = $_GET['value']; 
-
-        //     elseif($value == 2){
-        //         $catalogs = $user->getAllCatalogs($fb);
-        //         require_once __DIR__ . '/../views/fbdashboard/list-catalogs.php';
-        //     }
-        //     elseif($value == 3){
-        //         $catalogs = $user->getAllCatalogs($fb);
-        //         require_once __DIR__ . '/../views/fbdashboard/create-product.php';
-        //     }
-        //     elseif($value == 4){
-        //         $catalogs = $user->getAllProducts($fb);
-        //         require_once __DIR__ . '/../views/fbdashboard/list-products.php';
-        //     }
-        //     if($value == 5){
-        //         require_once __DIR__ . '/../views/fbdashboard/create-campaign.php';
-        //     }
-        //     elseif($value == 6){
-        //         $this->createAdSet();
-        //         require_once __DIR__ . '/../views/fbdashboard/create-adset.php';
-        //     }
-        //     elseif($value == 7){
-        //         require_once __DIR__ . '/../views/fbdashboard/create-adcreative.php';
-        //     }
-        //     elseif($value == 8){
-                
-        //         $adSets = $cm->getAdSets($this->data['ads_id'], $this->data['fb_access_token']);
-        //         $adCreatives = $cm->getAdCreatives($this->data['ads_id'], $this->data['fb_access_token']);
-        //         require_once __DIR__ . '/../views/fbdashboard/create-advertisement.php';
-        //     }
-        // }
-    }
-
     public function buildClient() {
         return new \Facebook\Facebook([
             'app_id'                => $this->data['app_id'],
