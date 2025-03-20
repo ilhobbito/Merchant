@@ -17,12 +17,15 @@
 
                 <h3>Select a campaign to create the adset for</h3>
                 <label for="campaign_id">Campaign Id: </label>
-                <input type="number" name="campaign_id" id="campaign_id">
-                <br><br>
+                <select name="campaign_id" id="campaign_id">
+                    <?php foreach($campaigns['data'] as $campaign){ ?>
+                            <option value="<?php echo $campaign['id']?>"><?php echo "Name: " . $campaign['name'] . " Id: " . $campaign['id']?></option>
+                    <?php }?>
+                </select><br><br>
 
                 <h3>Select a daily budget, 1000 = 10.00 sek</h3>
                 <label for="daily_budget">Daily Budget: </label>
-                <input type="number" name="daily_budget" id="daily_budget" min="1000">
+                <input type="number" name="daily_budget" id="daily_budget" min="1500">
                 <br><br>
 
                 <label for="billing_event">Billing Event: </label>
@@ -59,23 +62,6 @@
                 <br><br>
                 <button type="submit" name="create_adset">Create Adset</button>
             </form>
-        </div>
-
-        <!-- Campaigns list container -->
-        <div style="flex: 1;">
-            <?php if (isset($campaigns['data'])): ?>
-                <p>Campaigns loaded successfully:</p>
-                <?php 
-                    $x = 1; 
-                    foreach ($campaigns['data'] as $campaign) {
-                        echo "#" . $x . ": Id: " . $campaign['id'] 
-                            . " Campaign Name: " . $campaign['name'] . "<br>";
-                        $x++;
-                    }
-                ?>
-            <?php else: ?>
-                <p>No campaigns or error occurred.</p>
-            <?php endif; ?>
         </div>
     </div>
 </body>

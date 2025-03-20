@@ -1,4 +1,5 @@
 RewriteEngine On
+RewriteBase /Merchant/public/
 
 # Only rewrite if the requested file/directory does not exist
 RewriteCond %{REQUEST_FILENAME} !-f

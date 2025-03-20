@@ -34,11 +34,11 @@ class User{
     }
 
     public function getAdsId($fb){
-        
+
         try {
             $response = $fb->get('/me/adaccounts?fields=name,account_id', $_SESSION['fb_access_token']);
             $adAccountsData = $response->getDecodedBody();
-            
+
             if (isset($adAccountsData['data']) && !empty($adAccountsData['data'])) {
 
                 return $adAccountsData['data'][0]['account_id'];
