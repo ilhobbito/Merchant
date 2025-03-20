@@ -52,19 +52,18 @@ class FbdashboardController{
     public function apiTest(){
         
         $fb = $this->buildClient();
+        $message;
 
         try {
             $response = $fb->get('/me?fields=id,name,email', $this->data['fb_access_token']);
             $user = $response->getGraphUser();
-            echo '<h4>Hello, ' . $user->getName() . '</h4>';
+            $message = 'Hello, ' . $user->getName();
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
-            echo 'Graph returned an error: ' . $e->getMessage();
+            $message = 'Graph returned an error: ' . $e->getMessage();
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
-            echo 'Facebook SDK returned an error: ' . $e->getMessage();
-        }
-
-        echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
-        
+            $message = 'Facebook SDK returned an error: ' . $e->getMessage();
+        }  
+        require_once __DIR__ . '/../views/fbdashboard/api-test.php';     
     }
     
     // Makes an API request to Post a catalog to the users ads account
@@ -360,38 +359,42 @@ class FbdashboardController{
     public function checkAdAccount()
     {
         $fb = $this->buildClient();
+        $message;
         try {
             $response = $fb->get(
                 "/{$this->data['ads_id']}?fields=name,currency",
                 $this->data['fb_access_token']
             );
             $adAccount = $response->getDecodedBody();
-            print_r($adAccount);
+            $message = json_encode($adAccount);
         } catch (\Facebook\Exceptions\FacebookResponseException $e) {
-            echo 'Graph returned an error: ' . $e->getMessage();
+            $message = 'Graph returned an error: ' . $e->getMessage();
         } catch (\Facebook\Exceptions\FacebookSDKException $e) {
-            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            $message = 'Facebook SDK returned an error: ' . $e->getMessage();
         }
-        echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+
+        require_once __DIR__ . '/../views/fbdashboard/check-ad-account.php'; 
+        
     }
 
     // Makes an API request to retrieve a pixel connected to the users account if there is any
     public function getPixel()
     {
         $fb = $this->buildClient();
+        $message;
         try {
             $response = $fb->get(
                 "/{$this->data['ads_id']}/adspixels?fields=id,name",
                 $this->data['fb_access_token']
             );
             $pixels = $response->getDecodedBody();
-            print_r($pixels);
+            $message = json_encode($pixels);
         } catch (\Facebook\Exceptions\FacebookResponseException $e) {
-            echo 'Graph returned an error: ' . $e->getMessage();
+            $message = 'Graph returned an error: ' . $e->getMessage();
         } catch (\Facebook\Exceptions\FacebookSDKException $e) {
-            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            $message = 'Facebook SDK returned an error: ' . $e->getMessage();
         }
-        echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+        require_once  __DIR__ . '/../views/fbdashboard/get-pixel.php'; 
     }
   
 }
