@@ -45,40 +45,38 @@ class FbdashboardController{
         $user = new User();
         $fb = $this->buildClient();
 
-        if (isset($_GET['value'])) {
-            $value = $_GET['value']; 
-            if($value == 1){
-                require_once __DIR__ . '/../views/fbdashboard/create-catalog.php';
-            }
-            elseif($value == 2){
-                $catalogs = $user->getAllCatalogs($fb);
-                require_once __DIR__ . '/../views/fbdashboard/list-catalogs.php';
-            }
-            elseif($value == 3){
-                $catalogs = $user->getAllCatalogs($fb);
-                require_once __DIR__ . '/../views/fbdashboard/create-product.php';
-            }
-            elseif($value == 4){
-                $catalogs = $user->getAllProducts($fb);
-                require_once __DIR__ . '/../views/fbdashboard/list-products.php';
-            }
-            if($value == 5){
-                require_once __DIR__ . '/../views/fbdashboard/create-campaign.php';
-            }
-            elseif($value == 6){
-                $this->createAdSet();
-                require_once __DIR__ . '/../views/fbdashboard/create-adset.php';
-            }
-            elseif($value == 7){
-                require_once __DIR__ . '/../views/fbdashboard/create-adcreative.php';
-            }
-            elseif($value == 8){
+        // if (isset($_GET['value'])) {
+        //     $value = $_GET['value']; 
+
+        //     elseif($value == 2){
+        //         $catalogs = $user->getAllCatalogs($fb);
+        //         require_once __DIR__ . '/../views/fbdashboard/list-catalogs.php';
+        //     }
+        //     elseif($value == 3){
+        //         $catalogs = $user->getAllCatalogs($fb);
+        //         require_once __DIR__ . '/../views/fbdashboard/create-product.php';
+        //     }
+        //     elseif($value == 4){
+        //         $catalogs = $user->getAllProducts($fb);
+        //         require_once __DIR__ . '/../views/fbdashboard/list-products.php';
+        //     }
+        //     if($value == 5){
+        //         require_once __DIR__ . '/../views/fbdashboard/create-campaign.php';
+        //     }
+        //     elseif($value == 6){
+        //         $this->createAdSet();
+        //         require_once __DIR__ . '/../views/fbdashboard/create-adset.php';
+        //     }
+        //     elseif($value == 7){
+        //         require_once __DIR__ . '/../views/fbdashboard/create-adcreative.php';
+        //     }
+        //     elseif($value == 8){
                 
-                $adSets = $cm->getAdSets($this->data['ads_id'], $this->data['fb_access_token']);
-                $adCreatives = $cm->getAdCreatives($this->data['ads_id'], $this->data['fb_access_token']);
-                require_once __DIR__ . '/../views/fbdashboard/create-advertisement.php';
-            }
-        }
+        //         $adSets = $cm->getAdSets($this->data['ads_id'], $this->data['fb_access_token']);
+        //         $adCreatives = $cm->getAdCreatives($this->data['ads_id'], $this->data['fb_access_token']);
+        //         require_once __DIR__ . '/../views/fbdashboard/create-advertisement.php';
+        //     }
+        // }
     }
 
     public function buildClient() {
@@ -111,24 +109,30 @@ class FbdashboardController{
     // Makes an API request to Post a catalog to the users ads account
     public function createCatalog()
     {   
-        $fb = $this->buildClient();
-        
-        try {
-            $response = $fb->post("/{$this->data['business_id']}/owned_product_catalogs", [
-                'name' => $_POST['catalog_name'] 
-            ], $this->data['fb_access_token']);
-
-            //GraphNode is meant for a single object
-            $catalog = $response->getGraphNode();
-            echo "Catalog " . $_POST['catalog_name'] . "    created with ID: " . $catalog['id'];
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
-            echo 'Graph returned an error: ' . $e->getMessage();
-            exit;
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
-            echo 'Facebook SDK returned an error: ' . $e->getMessage();
-            exit;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            require_once __DIR__ . '/../views/fbdashboard/create-catalog.php';
         }
-        echo "<a href='/Merchant/public/fbdashboard'><br>Return</a>";
+
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $fb = $this->buildClient();
+            
+            try {
+                $response = $fb->post("/{$this->data['business_id']}/owned_product_catalogs", [
+                    'name' => $_POST['catalog_name'] 
+                ], $this->data['fb_access_token']);
+
+                //GraphNode is meant for a single object
+                $catalog = $response->getGraphNode();
+                echo "Catalog " . $_POST['catalog_name'] . "    created with ID: " . $catalog['id'];
+            } catch(Facebook\Exceptions\FacebookResponseException $e) {
+                echo 'Graph returned an error: ' . $e->getMessage();
+                exit;
+            } catch(Facebook\Exceptions\FacebookSDKException $e) {
+                echo 'Facebook SDK returned an error: ' . $e->getMessage();
+                exit;
+            }
+            echo "<a href='/Merchant/public/fbdashboard'><br>Return</a>";
+        }
     }
 
     // Makes an API request to retrieve all the catalogs connected the users business account
@@ -136,14 +140,22 @@ class FbdashboardController{
         $fb = $this->buildClient();
         $user = new User();
         $catalogs = $user->getAllCatalogs($fb);
+        require_once __DIR__ . '/../views/fbdashboard/list-catalogs.php';
     }
 
     // Makes an API request to Post a product to the users business account
     public function createProduct()
     {     
         $fb = $this->buildClient();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $user = new User();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {   
+            $catalogs = $user->getAllCatalogs($fb);
+            require_once __DIR__ . '/../views/fbdashboard/create-product.php';
+        }
+        
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
+                
                 $response = $fb->post(
                     // Select_catalog is the ID of the <select> options in the view page
                     "/{$_POST['select_catalog']}/products",
@@ -171,9 +183,6 @@ class FbdashboardController{
                 echo 'Facebook SDK returned an error: ' . $e->getMessage();
             }
         }
-        else{
-            echo "Couldn't make a post request!";
-        }
     }
 
     // Retrieves all the products connected the users business account
@@ -181,66 +190,73 @@ class FbdashboardController{
         $fb = $this->buildClient();
         $user = new User();
         $catalogs = $user->getAllProducts($fb);
+        require_once __DIR__ . '/../views/fbdashboard/list-products.php';
+
     }
 
     // Makes an API request to Post a campaign to the users Ads Account
     public function createCampaign()
     {
-        $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/campaigns";
-
-        if(!isset($_POST['campaign_name'])){
-            echo "A campaign name must be set!";
-            return;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        require_once __DIR__ . '/../views/fbdashboard/create-campaign.php';
         }
 
-        // Create a new cURL resource
-        $ch = curl_init($url);
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        // Set the POST fields
-        $postFields = [
-            'name'         => $_POST['campaign_name'],
-            'objective'    => $_POST['objective'] ?? 'OUTCOME_TRAFFIC',    
-            'status'       => $_POST['status'] ?? 'PAUSED',
-            'special_ad_categories' => json_encode([]),
-            'access_token' => $this->data['fb_access_token']
-        ];
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/campaigns";
 
-        // Return the transfer as a string
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            if(!isset($_POST['campaign_name'])){
+                echo "A campaign name must be set!";
+                return;
+            }
+        
+            // Create a new cURL resource
+            $ch = curl_init($url);
 
-        // Execute the request
-        $response = curl_exec($ch);
+            // Set the POST fields
+            $postFields = [
+                'name'         => $_POST['campaign_name'],
+                'objective'    => $_POST['objective'] ?? 'OUTCOME_TRAFFIC',    
+                'status'       => $_POST['status'] ?? 'PAUSED',
+                'special_ad_categories' => json_encode([]),
+                'access_token' => $this->data['fb_access_token']
+            ];
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
-        // Check for cURL errors
-        if ($error = curl_error($ch)) {
-            echo "cURL Error: " . $error;
-        } else {
-            echo "Campaign \"" .$_POST['campaign_name'] . "\" with ID '" . $response . "' successfully created<br>";
-            echo "Status: "  . $_POST['status'] . "     Objective: " . $_POST['objective'] . "<br>";
-            echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+            // Return the transfer as a string
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            // Execute the request
+            $response = curl_exec($ch);
+
+            // Check for cURL errors
+            if ($error = curl_error($ch)) {
+                echo "cURL Error: " . $error;
+            } else {
+                echo "Campaign \"" .$_POST['campaign_name'] . "\" with ID '" . $response . "' successfully created<br>";
+                echo "Status: "  . $_POST['status'] . "     Objective: " . $_POST['objective'] . "<br>";
+                echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+            }
+            // Close cURL resource
+            curl_close($ch);
         }
-        // Close cURL resource
-        curl_close($ch);
     }
 
     // Makes an API request to Post an Ad Set to the users Ads Account
     public function createAdSet()
     {
-        // This whole block might be pointless and could be done with a single line in the routing function, check on it later
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $cm = new Campaign();
             $campaigns = $cm->getCampaigns($this->data['ads_id'], $this->data['fb_access_token']);
-            
             if (isset($campaigns['error'])) {
                 echo "Error fetching campaigns: " . $campaigns['error']['message'];
                 return;
             }
-            require_once __DIR__ . '/../views/fbdashboard/create-adset.php';
+            require_once __DIR__ . '/../views/fbdashboard/create-adset.php';    
         }
-       
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adsets";
             $ch = curl_init($url);
 
@@ -252,7 +268,7 @@ class FbdashboardController{
             $postFields = [
                 'name'            => $_POST['adset_name'],
                 'campaign_id'     => $_POST['campaign_id'], 
-                'daily_budget'    => $_POST['daily_budget'] ?? 1000, // Daily budget is in the smallest currency unit. Set cost like this, "1000" = 10.00
+                'daily_budget'    => $_POST['daily_budget'] ?? 1500, // Daily budget is in the smallest currency unit. Set cost like this, "1000" = 10.00
                 'billing_event'   => $_POST['billing_event'] ?? 'IMPRESSIONS',
                 'bid_strategy'    => $_POST['bid_strategy'] ?? 'LOWEST_COST_WITHOUT_CAP',
                 'optimization_goal' => $_POST['optimization_goal'] ?? 'LINK_CLICKS',
@@ -292,80 +308,91 @@ class FbdashboardController{
     // Makes an API request to Post an Ad Creative to the users Ads account
     public function createAdCreative()
     {
-        print_r($this->data['ads_id']);
-        die();
-        $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adcreatives";
-        $ch = curl_init($url);
-
-        $objectStorySpec = [
-            'page_id'   => $_POST['page_id'] ?? '', 
-            'link_data' => [
-                'link'    => $_POST['link'] ??'https://www.example.com/',
-                'message' => $_POST['message'] ??'Check out our amazing offer!'
-            ]
-        ];
-
-        $postFields = [
-            'name'               => $_POST['creative_name'] ?? 'MyAdCreative',
-            'object_story_spec'  => json_encode($objectStorySpec),
-            'access_token'       => $this->data['fb_access_token']
-        ];
-
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-
-        if ($error = curl_error($ch)) {
-            echo "cURL Error: " . $error;
-        } else {
-            echo "Ad Creative " . $_POST['creative_name'] . " with ID: " . $response . " was successfully created!<br>";
-            echo "Link: " . $_POST['link'] . "      " . $_POST['page_id'] . "<br>Ad Message: \"" . $_POST['message'] . "\".";  
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            require_once __DIR__ . '/../views/fbdashboard/create-adcreative.php';
         }
-
-        echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
-        curl_close($ch);
+        else{
+            $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adcreatives";
+            $ch = curl_init($url);
+    
+            $objectStorySpec = [
+                'page_id'   => $_POST['page_id'] ?? '', 
+                'link_data' => [
+                    'link'    => $_POST['link'] ??'https://www.example.com/',
+                    'message' => $_POST['message'] ??'Check out our amazing offer!'
+                ]
+            ];
+    
+            $postFields = [
+                'name'               => $_POST['creative_name'] ?? 'MyAdCreative',
+                'object_story_spec'  => json_encode($objectStorySpec),
+                'access_token'       => $this->data['fb_access_token']
+            ];
+    
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+    
+            if ($error = curl_error($ch)) {
+                echo "cURL Error: " . $error;
+            } else {
+                echo "Ad Creative " . $_POST['creative_name'] . " with ID: " . $response . " was successfully created!<br>";
+                echo "Link: " . $_POST['link'] . "      " . $_POST['page_id'] . "<br>Ad Message: \"" . $_POST['message'] . "\".";  
+            }
+    
+            echo "<br><a href='/Merchant/public/fbdashboard'>Return</a>";
+            curl_close($ch);
+        }
+       
     }
 
     // Makes an API request to Post an actual Advertisement to the users Ads Account
     public function createAdvertisement()
     {
-        $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/ads";
-        $ch = curl_init($url);
-
-        if(isset($_POST['adset_id']) && isset($_POST['adcreative_id'])){
-            $postFields = [
-                'name'     => $_POST['ad_name'],
-                'adset_id' => $_POST['adset_id'],
-                // The 'creative' field expects a JSON object containing 'creative_id'
-                'creative' => json_encode([
-                    'creative_id' => $_POST['adcreative_id'] ?? $creativeId
-                ]),
-                // Keep it PAUSED to avoid going live immediately and having to pay
-                'status'   => $_POST['status'] ?? 'PAUSED',
-                'access_token' => $this->data['fb_access_token']
-            ];
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $cm = new Campaign();
+            $adSets = $cm->getAdSets($this->data['ads_id'], $this->data['fb_access_token']);
+            $adCreatives = $cm->getAdCreatives($this->data['ads_id'], $this->data['fb_access_token']);
+            require_once __DIR__ . '/../views/fbdashboard/create-advertisement.php';
         }
         else{
-            echo "Ad Set and Ad Creative requires Id's";
-            return;
+            $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/ads";
+            $ch = curl_init($url);
+    
+            if(isset($_POST['adset_id']) && isset($_POST['adcreative_id'])){
+                $postFields = [
+                    'name'     => $_POST['ad_name'],
+                    'adset_id' => $_POST['adset_id'],
+                    // The 'creative' field expects a JSON object containing 'creative_id'
+                    'creative' => json_encode([
+                        'creative_id' => $_POST['adcreative_id'] ?? $creativeId
+                    ]),
+                    // Keep it PAUSED to avoid going live immediately and having to pay
+                    'status'   => $_POST['status'] ?? 'PAUSED',
+                    'access_token' => $this->data['fb_access_token']
+                ];
+            }
+            else{
+                echo "Ad Set and Ad Creative requires Id's";
+                return;
+            }
+           
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    
+            $response = curl_exec($ch);
+            if ($error = curl_error($ch)) {
+                echo "cURL Error: " . $error;
+            } else {
+                echo "Ad " . $_POST['ad_name'] . " with Id: " . $response . " was successfully created!<br>";
+                echo "This ad belongs to Ad Set with Id: " . $_POST['adset_id'] . " and Ad Creative with Id: " . $_POST['adcreative_id'] . ".<br>";
+                echo "Status: " . $_POST['status'];
+                echo "<br><br><a href='/Merchant/public/fbdashboard'>Return</a>";
+            }
+            curl_close($ch);
         }
-       
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($ch);
-        if ($error = curl_error($ch)) {
-            echo "cURL Error: " . $error;
-        } else {
-            echo "Ad " . $_POST['ad_name'] . " with Id: " . $response . " was successfully created!<br>";
-            echo "This ad belongs to Ad Set with Id: " . $_POST['adset_id'] . " and Ad Creative with Id: " . $_POST['adcreative_id'] . ".<br>";
-            echo "Status: " . $_POST['status'];
-            echo "<br><br><a href='/Merchant/public/fbdashboard'>Return</a>";
-        }
-
-        curl_close($ch);
     }
 
     // Makes an API request to retrieve some basic info about the ads account

@@ -16,12 +16,20 @@
                 <br><br>
 
                 <label for="adset_id">Ad Set Id: </label>
-                <input type="text" name="adset_id" id="adset_id">
-                <br><br>
+                <select name="adset_id" id="adset_id">
+                    <?php foreach($adSets['data'] as $adSet){ ?>
+                            <option value="<?php echo  $adSet['id']?>"><?php echo "Name: " . $adSet['name'] . " Id: " . $adSet['id']?></option>
+                    <?php }?>
+                </select><br><br>
 
-                <label for="adcreative_id">Ad Creative Id: </label>
-                <input type="text" name="adcreative_id" id="adcreative_id">
-                <br><br>
+                <label for="adcreative_id">Ad Set Id: </label>
+                <select name="adcreative_id" id="adcreative_id">
+                    <?php foreach($adCreatives['data'] as $adCreative){ ?>
+                            <option value="<?php echo  $adCreative['id']?>"><?php echo "Name: " . $adCreative['name'] . " Id: " . $adCreative['id']?></option>
+                    <?php }?>
+                </select><br><br>
+
+     
 
                 <label for="status">Status: </label>
                 <select name="status" id="status">
@@ -34,37 +42,6 @@
 
             </form>
         </div>
-        <div style="flex: 1;">
-            <h3>Your Ad Sets: </h3>
-            <?php if (isset($adSets['data'])): ?>
-            <?php 
-                $x = 1; 
-                foreach ($adSets['data'] as $adSet) {
-                    echo "#" . $x . ": Id: " . $adSet['id'] 
-                        . " Ad Set Name: " . $adSet['name'] . "<br>";
-                    $x++;
-                }
-            ?>
-            <?php else: ?>
-                <p>No ad sets or error occurred.</p>
-            <?php endif; ?>
-        </div>
-        <div style="flex: 1;">
-        <h3>Your Ad Creatives: </h3>
-            <?php if (isset($adCreatives['data'])): ?>
-            <?php 
-                $x = 1; 
-                foreach ($adCreatives['data'] as $adCreative) {
-                    echo "#" . $x . ": Id: " . $adCreative['id'] 
-                        . " Ad Set Name: " . $adCreative['name'] . "<br>";
-                    $x++;
-                }
-            ?>
-            <?php else: ?>
-                <p>No ad creatives or error occurred.</p>
-            <?php endif; ?>
-        </div>
-
     </div>
     
 </body>
