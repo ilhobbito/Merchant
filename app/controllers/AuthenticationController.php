@@ -78,7 +78,7 @@ class AuthenticationController
         // Recreate the client here
         $client = new \Google_Client();
         $client->setAuthConfig('../client_secret.json');
-        $client->setRedirectUri('http://127.0.0.1/Merchant/public/authentication/callback'); //Replace
+        $client->setRedirectUri('https://127.0.0.1/Merchant/public/authentication/callback');
         $client->setScopes([
             'https://www.googleapis.com/auth/content',
             'https://www.googleapis.com/auth/adwords'

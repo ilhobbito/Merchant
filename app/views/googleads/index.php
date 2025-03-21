@@ -1,4 +1,6 @@
 <?php
+require_once 'D:\xampp\htdocs\Merchant\public\config.php';
+
 if (!isset($_SESSION['google_access_token'])) {
     header('Location: /');
     exit();
@@ -12,8 +14,8 @@ if (!isset($_SESSION['google_access_token'])) {
 </head>
 <body>
     <h2>Welcome to Google Ads</h2>
-    <a href="createTestClient">Create Test Client</a><br>
-    <a href="googleads/listCampaign">List campaigns</a><br>
-    <a href="googleads/setTestBudget">Set Test Budget</a><br>
-    <a href="googleads/listAccountsWithLibrary">List accounts</a>
+    <a href="<?php echo BASE_URL; ?>/googleads/createTestClient">Create Test Client</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/listCampaign">List campaigns</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/setTestBudget">Set Test Budget</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/listAccountsWithLibrary">List accounts</a>
 </body>

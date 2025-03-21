@@ -8,6 +8,8 @@ use Google_Service_ShoppingContent;
 use Google_Service_ShoppingContent_Product;
 use Google_Service_ShoppingContent_Price;
 
+use Dotenv\Dotenv;
+
 class DashboardController
 {
     private $client;
@@ -17,6 +19,8 @@ class DashboardController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        $dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
+        $dotenv->load();
         
         // Check if Google token is set
         if (isset($_SESSION['google_access_token'])) {
@@ -55,10 +59,10 @@ class DashboardController
         
         $client = new Google_Client();
         $client->setApplicationName('Google-Merchant-API-Test');
-        $client->setAccessToken($_SESSION['access_token']);
+        $client->setAccessToken($_SESSION['google_access_token']);
 
         $service = new Google_Service_ShoppingContent($client);
-        $merchantId = '5551404300'; // Replace with merchandId
+        $merchantId = $_ENV['MERCHANT_ID']; // Replace with merchandId
 
         // Create a dummy product object.
         $product = new Google_Service_ShoppingContent_Product();
@@ -103,7 +107,7 @@ class DashboardController
 
 
         $service = new Google_Service_ShoppingContent($this->client);
-        $merchantId = '5551404300'; // Replace with merchandId
+        $merchantId = $_ENV['MERCHANT_ID']; // Replace with merchandId
 
         try {
             // List products for the specified Merchant Center account
