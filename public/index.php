@@ -1,10 +1,4 @@
 <?php
-// require_once "../app/controllers/AuthenticationController.php";
-// require_once "../app/controllers/DashboardController.php";
-// require_once "../app/controllers/FbdashboardController.php";
-// require_once "../app/controllers/GoogleadsController.php";
-// require_once "../app/controllers/PoliciesController.php";
-
 session_start();
 
 
