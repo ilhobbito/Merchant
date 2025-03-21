@@ -13,7 +13,8 @@ use Google\Ads\GoogleAds\Lib\V19\GoogleAdsException;
 use Google\Ads\GoogleAds\V19\Services\ListAccessibleCustomersRequest;
 
 
-class GoogleadsController{
+class GoogleAdsController{
+    private $client;
     public function __construct(){
         // Not sure if necessary, will try to remove to check at a later point
         $this->client = new Google_Client();
@@ -24,9 +25,10 @@ class GoogleadsController{
         require_once __DIR__ . '/../views/googleads/index.php';
     } 
 
-    public function apiTest(){
+    public function listCampaign(){
+
         
-        $managerCustomerId = ''; // Replace with manager id that has developer token
+        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
         $storedToken = json_decode(file_get_contents('token.json'), true);
 
         // Check if refresh_token is present
@@ -57,7 +59,7 @@ class GoogleadsController{
             echo "No developertoken could be retrieved!";
             return;
         }
-        $customer_id = " "; // Replace with client id that has been made through the api
+        $customer_id = "5533436415"; // Replace with client id that has been made through the api
         // Uses api to search for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
 
@@ -83,16 +85,19 @@ class GoogleadsController{
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if (!empty($$response)) {
-            echo "GAQL API Response: " . $response;
-        } else {
-            echo "No campaigns could be found, wich is to be expected since the function for adding them has not yet been added.";
-        }
+        require_once '../app/views/googleads/list-campaign.php';
+        
     }
 
     function createTestClient(): void
     {
-        $managerCustomerId = '7771232397'; // Replace with manager id that has developer token
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+
+        require_once '../app/views/googleads/create-test-client.php';
+        } else {
+        
+
+        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
         
         // Build OAuth2 credentials from the OAUTH2 section
@@ -127,7 +132,9 @@ class GoogleadsController{
         $response = $customerServiceClient->createCustomerClient($request);
 
         printf("Test client account created with resource name: %s\n", $response->getResourceName());
+        echo "<a href='/Merchant/public/googleads'><br>Return</a>";
     }
+}
 
     public function listAccountsWithLibrary()
     {
@@ -151,9 +158,7 @@ class GoogleadsController{
         $request = new ListAccessibleCustomersRequest();
         $response = $customerServiceClient->listAccessibleCustomers($request);
 
-        foreach ($response->getResourceNames() as $resourceName) {
-            echo $resourceName . "<br>";
-        }
+        require_once '../app/views/googleads/list-accounts-with-library.php';
 
     }
 
@@ -192,8 +197,8 @@ class GoogleadsController{
             return;
         }
     
-        $managerCustomerId = ''; // Replace with manager id that has developer token
-        $customer_id = ''; // Replace with client id that has been made through the api
+        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
+        $customer_id = '5533436415'; // Replace with client id that has been made through the api
         
         // uses searchStream to check for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
@@ -264,6 +269,7 @@ class GoogleadsController{
                 echo "API Response: " . $response . "<br>";
             }
         }
+        require_once '../app/views/googleads/set-test-budget.php';
     }
     
     

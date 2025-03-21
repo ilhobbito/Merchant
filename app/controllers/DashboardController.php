@@ -48,14 +48,17 @@ class DashboardController
         require_once '../app/views/dashboard/index.php';
     }
 
-    public function addTestProduct(){
-
+    public function createTestProduct(){
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+        require_once '../app/views/dashboard/create-test-product.php';
+        } else {
+        
         $client = new Google_Client();
         $client->setApplicationName('Google-Merchant-API-Test');
         $client->setAccessToken($_SESSION['access_token']);
 
         $service = new Google_Service_ShoppingContent($client);
-        $merchantId = ''; // Replace with merchandId
+        $merchantId = '5551404300'; // Replace with merchandId
 
         // Create a dummy product object.
         $product = new Google_Service_ShoppingContent_Product();
@@ -93,26 +96,29 @@ class DashboardController
             echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         }
     }
+    }
 
 
     public function listProducts(){
 
+
         $service = new Google_Service_ShoppingContent($this->client);
-        $merchantId = ''; // Replace with merchandId
+        $merchantId = '5551404300'; // Replace with merchandId
 
         try {
             // List products for the specified Merchant Center account
             $productsResponse = $service->products->listProducts($merchantId);
             $products = $productsResponse->getResources();
+            require_once '../app/views/dashboard/list-products.php';
             
-            if (!empty($products)) {
-                foreach ($products as $product) {
-                    echo "Product ID: " . $product->getId() . "<br>";
-                }
-            } else {
-                echo "No products found.";
-            }
-            echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
+            // if (!empty($products)) {
+            //     foreach ($products as $product) {
+            //         echo "Product ID: " . $product->getId() . "<br>";
+            //     }
+            // } else {
+            //     echo "No products found.";
+            // }
+            // echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         } catch (Exception $e) {
             echo "An error occurred: " . $e->getMessage();
             echo "<a href='/Merchant/public/dashboard'><br>Return</a>";

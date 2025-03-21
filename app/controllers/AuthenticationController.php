@@ -45,7 +45,7 @@ class AuthenticationController
         $this->client = new Google_Client();
         $this->client->setPrompt('consent');
         $this->client->setAuthConfig('../client_secret.json');
-        $this->client->setRedirectUri('http://127.0.0.1/Merchant/public/authentication/callback');
+        $this->client->setRedirectUri('https://127.0.0.1/Merchant/public/authentication/callback');
         $this->client->setScopes(['https://www.googleapis.com/auth/content',  //Google Merchant API
                                   'https://www.googleapis.com/auth/adwords']); // Google Ads API
         $this->client->setAccessType('offline');
