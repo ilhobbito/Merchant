@@ -11,11 +11,13 @@ use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
 use Google\Ads\GoogleAds\Lib\V19\GoogleAdsClientBuilder;
 use Google\Ads\GoogleAds\Lib\V19\GoogleAdsException;
 use Google\Ads\GoogleAds\V19\Services\ListAccessibleCustomersRequest;
-
+use Dotenv\Dotenv;
 
 class GoogleAdsController{
     private $client;
     public function __construct(){
+        $dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
+        $dotenv->load();
         // Not sure if necessary, will try to remove to check at a later point
         $this->client = new Google_Client();
         $this->client->setAuthConfig('../client_secret.json');
@@ -28,7 +30,7 @@ class GoogleAdsController{
     public function listCampaign(){
 
         
-        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
         $storedToken = json_decode(file_get_contents('token.json'), true);
 
         // Check if refresh_token is present
@@ -59,7 +61,7 @@ class GoogleAdsController{
             echo "No developertoken could be retrieved!";
             return;
         }
-        $customer_id = "5533436415"; // Replace with client id that has been made through the api
+        $customer_id = $_ENV['CUSTOMER_ID']; // Replace with client id that has been made through the api
         // Uses api to search for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
 
@@ -97,7 +99,7 @@ class GoogleAdsController{
         } else {
         
 
-        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
         
         // Build OAuth2 credentials from the OAUTH2 section
@@ -197,8 +199,8 @@ class GoogleAdsController{
             return;
         }
     
-        $managerCustomerId = '9816924442'; // Replace with manager id that has developer token
-        $customer_id = '5533436415'; // Replace with client id that has been made through the api
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
+        $customer_id = $_ENV['CUSTOMER_ID']; // Replace with client id that has been made through the api
         
         // uses searchStream to check for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
