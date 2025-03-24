@@ -1,5 +1,5 @@
 <?php
-require_once 'C:\xampp\htdocs\Merchant\public\config.php';
+require_once __DIR__ . '/../../../public/config.php';
 
 if (!isset($_SESSION['google_access_token'])) {
     header('Location: /');
