@@ -1,4 +1,4 @@
-<?php require_once 'C:\xampp\htdocs\Merchant\public\config.php'; ?>
+<?php require_once __DIR__ . '/../../../public/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
