@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../public/config.php';
 
 // To avoid undefined key array warning from displaying. 
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
@@ -10,6 +11,10 @@ ini_set('display_errors', 1);
 use Dotenv\Dotenv;
 use App\Models\Campaign;
 use App\Models\User;
+use FacebookAds\Object\ProductSet;
+use FacebookAds\Api;
+use FacebookAds\Object\ProductCatalog;
+use FacebookAds\Object\Fields\ProductSetFields;
 
 class FbdashboardController{
 
@@ -154,6 +159,76 @@ class FbdashboardController{
 
     }
 
+    public function updateProductSet()
+    {
+        $product_set_id = ''; // Replace
+        $access_token = $this->data['fb_access_token'];
+    
+        $url = "https://graph.facebook.com/v19.0/{$product_set_id}";
+        $data = [
+            'access_token' => $access_token,
+            'filter' => json_encode([
+                'availability' => [
+                    'is_any' => ['in stock']
+                ]
+            ])
+        ];
+    
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+    
+        echo "Update response: " . $response . "\n";
+    }
+
+    public function createProductSet()
+    {
+        $fb = $this->buildClient();
+        $user = new User();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {   
+            $catalogs = $user->getAllCatalogs($fb);
+            require_once __DIR__ . '/../views/fbdashboard/create-product-set.php';
+        }
+        else{
+            $url = "https://graph.facebook.com/v19.0/{$_POST['catalog']}/product_sets";
+
+            if($_POST['filter'] == "no_filter"){
+                $data = [
+                    'access_token' => $this->data['fb_access_token'],
+                    'name' => $_POST['name'] . time(),
+                ];    
+            }
+            else{
+                $data = [
+                    'access_token' => $this->data['fb_access_token'],
+                    'name' => $_POST['name'] . time(),
+                    
+                    'filter' => json_encode([
+                        "{$_POST['filter']}" => [
+                            "{$_POST['filter_type']}" => [$_POST['filter_object']]
+                        ]
+                    ])
+                ];
+            }
+            
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        echo "Create response: " . $response . "\n";
+        echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+        }
+        
+    }
+
     // Makes an API request to Post a campaign to the users Ads Account
     public function createCampaign()
     {
@@ -176,7 +251,11 @@ class FbdashboardController{
             // Set the POST fields
             $postFields = [
                 'name'         => $_POST['campaign_name'],
-                'objective'    => $_POST['objective'] ?? 'OUTCOME_TRAFFIC',    
+                'objective'    => $_POST['objective'] ?? 'OUTCOME_TRAFFIC',
+                // Change these to be more dynamic
+                //'is_advantage_plus_campaign' => 'true',
+                'buying_type' => 'AUCTION',  
+
                 'status'       => $_POST['status'] ?? 'PAUSED',
                 'special_ad_categories' => json_encode([]),
                 'access_token' => $this->data['fb_access_token']
@@ -206,6 +285,7 @@ class FbdashboardController{
     // Makes an API request to Post an Ad Set to the users Ads Account
     public function createAdSet()
     {
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $cm = new Campaign();
             $campaigns = $cm->getCampaigns($this->data['ads_id'], $this->data['fb_access_token']);
@@ -232,6 +312,7 @@ class FbdashboardController{
                 'billing_event'   => $_POST['billing_event'] ?? 'IMPRESSIONS',
                 'bid_strategy'    => $_POST['bid_strategy'] ?? 'LOWEST_COST_WITHOUT_CAP',
                 'optimization_goal' => $_POST['optimization_goal'] ?? 'LINK_CLICKS',
+                'bid_amount' => $_POST['bid_amount'] ?? 50,   
                 'targeting'       => json_encode([
                     'geo_locations' => [
                         'countries' => ['SE']  
@@ -240,7 +321,14 @@ class FbdashboardController{
                 'dsa_beneficiary'     => $_POST['dsa_beneficiary'], // The Facebook Page or entity benefiting
                 'dsa_payor'           => $_POST['dsa_payor'],  // The Facebook Page or entity paying
                 'status'          => $_POST['status'] ?? 'PAUSED',
-                'access_token'    => $this->data['fb_access_token']
+                'access_token'    => $this->data['fb_access_token'],
+                'start_time'        => (new \DateTime('+1 day'))->format(\DateTime::ISO8601),
+                'end_time'          => (new \DateTime('+7 days'))->format(\DateTime::ISO8601),
+                'promoted_object'   => json_encode([
+                    'pixel_id'       => '944167274546253',       
+                    'product_set_id' => '1019923683524437',
+                    'custom_event_type' => 'PURCHASE'
+                ])
             ];
 
             curl_setopt($ch, CURLOPT_POST, true);
@@ -274,12 +362,22 @@ class FbdashboardController{
         else{
             $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adcreatives";
             $ch = curl_init($url);
-    
+            $imageHash = $this->imageHash();
+
             $objectStorySpec = [
-                'page_id'   => $_POST['page_id'] ?? '', 
+                'page_id'  => $_POST['page_id'] ?? '',
                 'link_data' => [
-                    'link'    => $_POST['link'] ??'https://www.example.com/',
-                    'message' => $_POST['message'] ??'Check out our amazing offer!'
+                    'link'    => $_POST['link'],
+                    'message' => $_POST['message'] ?? 'Check out our amazing offer!',
+                    'image_hash' => $imageHash,
+                    'call_to_action' => [
+                        'type'  => $_POST['call_to_action'],
+                        'value' => [
+                            'link' => $_POST['link']
+                        ]
+                    ],
+                    // 'multi_share_end_card'  => false,
+                    // 'show_multiple_images'  => false,
                 ]
             ];
     
@@ -298,6 +396,7 @@ class FbdashboardController{
                 echo "cURL Error: " . $error;
             } else {
                 echo "Ad Creative " . $_POST['creative_name'] . " with ID: " . $response . " was successfully created!<br>";
+                echo "Call to action type: " . $_POST['call_to_action<br>'];
                 echo "Link: " . $_POST['link'] . "      " . $_POST['page_id'] . "<br>Ad Message: \"" . $_POST['message'] . "\".";  
             }
     
@@ -395,6 +494,84 @@ class FbdashboardController{
             $message = 'Facebook SDK returned an error: ' . $e->getMessage();
         }
         require_once  __DIR__ . '/../views/fbdashboard/get-pixel.php'; 
+    }
+
+
+    public function mockData()
+    {
+        $adId = '120219870898810468'; // Can also be Ad Set ID or Campaign ID
+        $adSetId = '120219870613290468';
+        $since = '2024-03-01';  // Start date
+        $until = '2024-03-24';  // End date
+
+        $mockData = [
+            'data' => [
+                [
+                    'impressions' => '1243',
+                    'clicks' => '58',
+                    'spend' => '12.67',
+                    'ad_name' => 'Mock Ad A',
+                    'date_start' => '2024-03-01',
+                    'date_stop' => '2024-03-21'
+                ]
+            ]
+        ];
+
+        // Meta Graph API URL
+        $url = "https://graph.facebook.com/v19.0/{$adId}/insights?fields=impressions,clicks,spend&time_range[since]={$since}&time_range[until]={$until}&access_token={$this->data['fb_access_token']}";
+
+        // Init cURL
+        $ch = curl_init();
+
+        // Set options
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute cURL
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Decode response
+        $data = json_decode($response, true);
+        if (empty($data['data'])) {
+            $data = $mockData;
+            echo "No real data found from " . $adId . "— using mock data.</br>";
+        } else {
+            echo "Real data fetched from ad " . $adId . ".</br>";
+        }
+        // Output results
+        if (!empty($data['data'])) {
+            $result = $data['data'][0];
+            echo "Impressions: " . $result['impressions'] . "</br>";
+            echo "Clicks: " . $result['clicks'] . "</br>";
+            echo "Spend: SEK" . $result['spend'] . "</br>";
+        } else {
+            echo "No performance data available for this ad.</br>";
+        }
+        echo "<br><br><a href='/Merchant/public/fbdashboard'>Return</a>";
+    }
+
+    public function imageHash()
+    {
+        $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adimages";
+        $ch = curl_init($url);
+
+        $postFields = [
+            'filename' => new \CURLFile(BASE_URL . "\images\dummy.png"),
+            'access_token' => $this->data['fb_access_token']
+        ];
+
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Decode the response to get the image hash
+        $data = json_decode($response, true);
+        $imageHash = $data['images']['dummy.png']['hash'] ?? null;
+
+        return $imageHash;
     }
   
 }

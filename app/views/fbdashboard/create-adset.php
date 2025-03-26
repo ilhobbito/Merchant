@@ -37,12 +37,15 @@
                 <label for="bid_strategy">Bid Strategy: </label>
                 <select name="bid_strategy" id="bid_strategy">
                     <option value="LOWEST_COST_WITHOUT_CAP">Lowest cost without cap</option>
+                    <option value="LOWEST_COST_WITH_BID_CAP">Lowest cost with cap</option>
+                    
                 </select>
                 <br><br>
 
                 <label for="optimization_goal">Optimization Goal: </label>
                 <select name="optimization_goal" id="optimization_goal">
                     <option value="LINK_CLICKS">Link Clicks</option>
+                    <option value="OFFSITE_CONVERSIONS">Offsite Conversions</option>
                 </select>
                 <br><br>
                 

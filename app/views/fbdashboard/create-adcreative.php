@@ -25,6 +25,12 @@
         <br>
         <textarea cols="40" row="10" name="message" id="message"></textarea>
         <br><br>
+
+        <label for="call_to_action">Call to action type: </label>
+        <select name="call_to_action" id="call_to_action">
+            <option value="SHOP_NOW">Shop Now</option>
+        </select>
+
         <button type="submit" name="create_creative">Create Ad Creative</button>
     </form>
 
