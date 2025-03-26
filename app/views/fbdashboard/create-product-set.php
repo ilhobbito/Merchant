@@ -29,6 +29,7 @@
             <option value="name">Name</option>
         </select><br><br>
 
+        <!-- TODO: Might have to remove this if is_any is the only option available -->
         <label for="filter_type">Filter Type</label>
         <select name="filter_type" id="filter_type">
             <option value="is_any">Is Any</option>
