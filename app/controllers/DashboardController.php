@@ -63,11 +63,10 @@ class DashboardController
 
         $service = new Google_Service_ShoppingContent($client);
         $merchantId = $_ENV['MERCHANT_ID']; // Replace with merchandId
+        // $_SESSION['last_created_product_id'] = $insertedProduct->getId(); // Store product ID in session
 
-        // Create a dummy product object.
         $product = new Google_Service_ShoppingContent_Product();
-
-        // Required fields for the product. Unless name is updated it will just update the product with the same name
+        // Required fields for the product
         $product->setOfferId("dummy_003");
         $product->setTitle("Dummy Test Product");
         $product->setDescription("This is a dummy product for testing purposes.");
@@ -81,18 +80,19 @@ class DashboardController
         $product->setAvailability("in stock");
         $product->setCondition("new");
 
-        // Set price. Price must be provided as a Price object.
+        // Set price
         $price = new Google_Service_ShoppingContent_Price();
         $price->setValue("9.99");
         $price->setCurrency("USD");
         $product->setPrice($price);
 
-        // Optionally add additional fields as required by your Merchant Center account.
+        // Insert the product into your Merchant Center account
         try {
-            // Insert the product into your Merchant Center account.
             $insertedProduct = $service->products->insert($merchantId, $product);
+            $_SESSION['last_created_product_id'] = $insertedProduct->getId(); // Store product ID
             echo "Product added successfully!<br>";
             echo "Product ID: " . $insertedProduct->getId();
+            echo "Offer ID:  " . $insertedProduct->getOfferId();
             echo "<br><br>It might take some time for the product to show up in the feed, please wait a moment if you don't see it and refresh";
             echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         } catch (\Exception $e) {
@@ -102,6 +102,54 @@ class DashboardController
     }
     }
 
+    public function editTestProduct() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            require_once '../app/views/dashboard/edit-product.php';
+        } else {
+            $client = new Google_Client();
+            $client->setApplicationName('Google-Merchant-API-Test');
+            $client->setAccessToken($_SESSION['google_access_token']);
+    
+            $service = new Google_Service_ShoppingContent($client);
+            $merchantId = $_ENV['MERCHANT_ID'];
+    
+            $productId = $_SESSION['last_created_product_id'] ?? $_POST['productId'];
+            $updatedTitle = $_POST['title'] ?? ''; // Fallback till tom sträng om ej satt
+            $updatedDescription = $_POST['description'] ?? '';
+            $updatedPrice = $_POST['price'] ?? null; // Null om ej satt
+            $updatedCurrency = $_POST['currency'] ?? null;
+    
+            try {
+                // Validera att pris och valuta är satta och giltiga
+                if (empty($updatedPrice) || empty($updatedCurrency)) {
+                    throw new \Exception("Price and currency are required fields.");
+                }
+    
+                // Skapa ett nytt produkt-objekt
+                $product = new Google_Service_ShoppingContent_Product();
+                $product->setTitle($updatedTitle);
+                $product->setDescription($updatedDescription);
+    
+                // Sätt priset
+                $price = new Google_Service_ShoppingContent_Price();
+                $price->setValue($updatedPrice); // T.ex. "9.99"
+                $price->setCurrency($updatedCurrency); // T.ex. "USD"
+                $product->setPrice($price);
+    
+                // Uppdatera produkten i Merchant Center
+                $updatedProduct = $service->products->update($merchantId, $productId, $product);
+    
+                $_SESSION['last_updated_product_id'] = $updatedProduct->getId();
+                echo "Product updated successfully!<br>";
+                echo "Product ID: " . $updatedProduct->getId();
+                echo "<br><br>Changes might take some time to reflect. Please refresh the feed.";
+                echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
+            } catch (\Exception $e) {
+                echo "An error occurred while updating the product: " . $e->getMessage();
+                echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
+            }
+        }
+    }
 
     public function listProducts(){
 

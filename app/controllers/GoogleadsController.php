@@ -136,9 +136,48 @@ class GoogleAdsController{
         printf("Test client account created with resource name: %s\n", $response->getResourceName());
         echo "<a href='/Merchant/public/googleads'><br>Return</a>";
     }
+
+    // function editTestProduct(): void
+    // {
+    //     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    //         require_once '../app/views/dashboard/edit-product.php';
+    //     } else {
+    //         $productId = $_POST['product_id'] ?? null;
+    //         $productName = $_POST['product_name'] ?? null;
+    //         $productPrice = $_POST['product_price'] ?? null;
+
+    //         if (!$productId || !$productName || !$productPrice) {
+    //             echo "Error: Missing required fields!";
+    //             return;
+    //         }
+
+    //         // Assuming the test product is stored in a session or a static array
+    //         session_start();
+    //         if (!isset($_SESSION['testProducts'])) {
+    //             echo "Error: No test products found!";
+    //             return;
+    //         }
+
+    //         $testProducts = &$_SESSION['testProducts'];
+
+    //         // Find and update the test product
+    //         foreach ($testProducts as &$product) {
+    //             if ($product['id'] == $productId) {
+    //                 $product['name'] = $productName;
+    //                 $product['price'] = $productPrice;
+    //                 echo "Test product updated successfully!";
+    //                 echo "<a href='/Merchant/public/dashboard'><br>Return to Dashboard</a>";
+    //                 return;
+    //             }
+    //         }
+
+    //         echo "Error: Product not found!";
+    //     }
+    // }
+
 }
 
-    public function listAccountsWithLibrary()
+         function listAccountsWithLibrary()
     {
         // Had a ton of trouble to read OAuth2 Credentials from the google_ads_php.ini file so 
         // had to build them individually and then merge them to be able to read it correctly.
@@ -164,7 +203,7 @@ class GoogleAdsController{
 
     }
 
-    public function setTestBudget(){
+     function setTestBudget(){
 
         // Makes token.json's data retrievable
         $storedToken = json_decode(file_get_contents('token.json'), true);
@@ -273,6 +312,5 @@ class GoogleAdsController{
         }
         require_once '../app/views/googleads/set-test-budget.php';
     }
-    
-    
 }
+    
