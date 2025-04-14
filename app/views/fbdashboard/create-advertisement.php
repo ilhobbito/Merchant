@@ -9,6 +9,7 @@
     <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
     <div style="display: flex; gap: 20px;">
         <div style="flex: 1;">
+            
             <h3>Create Advertisement: </h3>
             <form method="POST" action="createAdvertisement" >
                 <label for="ad_name">Ad Name: </label>
@@ -17,20 +18,24 @@
 
                 <label for="adset_id">Ad Set Id: </label>
                 <select name="adset_id" id="adset_id">
-                    <?php foreach($adSets['data'] as $adSet){ ?>
-                            <option value="<?php echo  $adSet['id']?>"><?php echo "Name: " . $adSet['name'] . " Id: " . $adSet['id']?></option>
-                    <?php }?>
-                </select><br><br>
-
-                <label for="adcreative_id">Ad Set Id: </label>
+                    <?php foreach ($adSets['data'] as $adSet) { 
+                        // Safely retrieve product_set_id if it exists
+                        $promotedObject = $adSet['promoted_object'] ?? [];
+                        $productSetId = $promotedObject['product_set_id'] ?? 'None'; 
+                        ?>
+                        <option value="<?php echo $adSet['id']; ?>">
+                            <?php echo "Name: {$adSet['name']} | Id: {$adSet['id']} | ProductSet: {$productSetId}"; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+                        
+                <label for="adcreative_id">Ad Creative Id: </label>
                 <select name="adcreative_id" id="adcreative_id">
-                    <?php foreach($adCreatives['data'] as $adCreative){ ?>
-                            <option value="<?php echo  $adCreative['id']?>"><?php echo "Name: " . $adCreative['name'] . " Id: " . $adCreative['id']?></option>
+                    <?php foreach($adCreatives['data'] as $adCreative){ ?>   
+                        <option value="<?php echo  $adCreative['id']?>"><?php echo "Name: " . $adCreative['name'] . " Id: " . $adCreative['id']?></option>
                     <?php }?>
                 </select><br><br>
-
      
-
                 <label for="status">Status: </label>
                 <select name="status" id="status">
                     <option value="PAUSED" selected>Paused</option>

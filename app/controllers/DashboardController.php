@@ -47,7 +47,54 @@ class DashboardController
         }
 
     }
+    public function getGoogleProducts(){
+        // Enable error reporting for debugging
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
 
+        // Initialize the Google Client
+        $client = new Google_Client();
+        $client->setApplicationName("My Merchant App");
+        $client->setAuthConfig('D:\xampp\htdocs\Merchant\public\token.json');  // Replace with your credentials file path
+        $client->addScope('https://www.googleapis.com/auth/content');
+
+        // Initialize the Content API service
+        $service = new Google_Service_ShoppingContent($client);
+
+        // Set your Merchant ID (for example, '1234')
+        $merchantId = '5551596487';
+
+        try {
+            // Retrieve the list of products
+            $response = $service->products->listProducts($merchantId);
+
+            // Optionally, print the full response to debug
+            echo "<pre>";
+            print_r($response);
+            echo "</pre>";
+
+            // Retrieve the products array from the response
+            $products = $response->getResources();
+            
+            if ($products) {
+                foreach ($products as $product) {
+                    // The product id is a composite identifier (e.g., "online:en:US:offerId")
+                    $compositeId = $product->getId();
+                    echo "Composite Product ID: " . $compositeId . "<br>";
+
+                    // If you need just the original offerId, split the composite id by colons:
+                    $parts = explode(':', $compositeId);
+                    $offerId = end($parts);
+                    echo "Offer ID: " . $offerId . "<br><br>";
+                }
+            } else {
+                echo "No products found.";
+            }
+        } catch (Exception $e) {
+            echo "An error occurred: " . $e->getMessage();
+        }
+
+}
     public function index(){
         require_once '../app/views/dashboard/index.php';
     }
@@ -104,8 +151,7 @@ class DashboardController
 
 
     public function listProducts(){
-
-
+        
         $service = new Google_Service_ShoppingContent($this->client);
         $merchantId = $_ENV['MERCHANT_ID']; // Replace with merchandId
 
@@ -114,15 +160,6 @@ class DashboardController
             $productsResponse = $service->products->listProducts($merchantId);
             $products = $productsResponse->getResources();
             require_once '../app/views/dashboard/list-products.php';
-            
-            // if (!empty($products)) {
-            //     foreach ($products as $product) {
-            //         echo "Product ID: " . $product->getId() . "<br>";
-            //     }
-            // } else {
-            //     echo "No products found.";
-            // }
-            // echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
         } catch (Exception $e) {
             echo "An error occurred: " . $e->getMessage();
             echo "<a href='/Merchant/public/dashboard'><br>Return</a>";
