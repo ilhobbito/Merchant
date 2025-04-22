@@ -591,6 +591,7 @@ class FbdashboardController{
         }
         else{
 
+            var_dump($_POST);
             $productSetId = $_POST['product_set'];
             $accessToken = $this->data['fb_access_token'];
 
@@ -769,7 +770,7 @@ class FbdashboardController{
         require_once  __DIR__ . '/../views/fbdashboard/get-pixel.php'; 
     }
 
-
+    //TODO: Implement this perhaps?
     public function mockData()
     {
         $adId = '120219870898810468'; // Can also be Ad Set ID or Campaign ID
@@ -886,6 +887,7 @@ class FbdashboardController{
         header('Content-Type: application/json');
         echo json_encode($productSets);
     }
+
     function throwFacebookApiException(array $error)
     {
         throw new \Exception(

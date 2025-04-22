@@ -100,6 +100,22 @@ class User{
         
         return $result['data'] ?? [];
     }
+
+    public function getProductSetById($productSetId, $accessToken){
+        $url = "https://graph.facebook.com/v22.0/{$productSetId}?fields=id,name&access_token={$accessToken}";
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+        if (isset($data['error'])) {
+            throw new \RuntimeException("Facebook API error: " . $data['error']['message']);
+        }
+
+        // return a single product‐set as an associative array
+        return $data;
+    }
     
 
 }

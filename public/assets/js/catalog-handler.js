@@ -1,4 +1,4 @@
-console.log("JS file loaded");
+console.log("catalog-handler.js loaded!");
 function getProductSetsByCatalog() {
     const category = document.getElementById('catalog_id');
     const productSetSelect = document.getElementById('product_set');

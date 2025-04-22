@@ -133,7 +133,8 @@ class AdsWizardController{
         elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $campaign = $_SESSION['wizard-campaign']['id'];
-            
+            $_SESSION['wizard-catalog-id'] = $_POST['catalog_id'];
+            $_SESSION['wizard-productset'] = $_POST['product_set'];
             $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/adsets";
             $ch = curl_init($url);
 
@@ -141,15 +142,29 @@ class AdsWizardController{
                 echo "A name for the Adset must be set!";
                 return;
             }
+            if(!isset($_POST['billing_event'])){
+                echo "A billing event must be set!";
+                return;
+            }
+            if(!isset($_POST['bid_strategy'])){
+                echo "A bid strategy must be set!";
+                return;
+            }
+            if(!isset($_POST['optimization_goal'])){
+                echo "An optimization goal must be set!";
+                return;
+            }
+            if(!isset($_POST['daily_budget']) || $_POST['daily_budget'] <= 0){
+                $_POST['daily_budget'] = 1500;
 
+            }
             $postFields = [
                 'name'            => $_POST['adset_name'],
                 'campaign_id'     => $campaign, 
-                'daily_budget'    => $_POST['daily_budget'] ?? 1500, // Daily budget is in the smallest currency unit. Set cost like this, "1000" = 10.00
-                'billing_event'   => $_POST['billing_event'] ?? 'IMPRESSIONS',
-                'bid_strategy'    => $_POST['bid_strategy'] ?? 'LOWEST_COST_WITHOUT_CAP',
-                'optimization_goal' => $_POST['optimization_goal'] ?? 'LINK_CLICKS',
-                'bid_amount' => $_POST['bid_amount'] ?? 50,   
+                'daily_budget'    => $_POST['daily_budget'], // Daily budget is in the smallest currency unit. Set cost like this, "1000" = 10.00
+                'billing_event'   => $_POST['billing_event'],
+                'bid_strategy'    => $_POST['bid_strategy'],
+                'optimization_goal' => $_POST['optimization_goal'],   
                 'targeting'       => json_encode([
                     'geo_locations' => [
                         'countries' => ['SE']  
@@ -157,8 +172,6 @@ class AdsWizardController{
                     'publisher_platforms' => ['facebook'],
                     'facebook_positions' => ['feed']
                 ]),
-                'dsa_beneficiary'     => $_POST['dsa_beneficiary'], // The Facebook Page or entity benefiting
-                'dsa_payor'           => $_POST['dsa_payor'],  // The Facebook Page or entity paying
                 'status'          => $_POST['status'] ?? 'PAUSED',
                 'access_token'    => $this->data['fb_access_token'],
                 
@@ -171,7 +184,15 @@ class AdsWizardController{
                 'promoted_object[custom_event_type]'=> 'PURCHASE',
 
             ];
-            var_dump($postFields);
+            if ($_POST['bid_strategy'] !== 'LOWEST_COST_WITHOUT_CAP' && isset($_POST['bid_amount']) && is_numeric($_POST['bid_amount']) && $_POST['bid_amount'] > 0) {
+                $postFields['bid_amount'] = (int) $_POST['bid_amount'];
+            }
+
+            if (isset($_POST['dsa_beneficiary']) && isset($_POST['dsa_payor'])){
+                $postFields['dsa_beneficiary'] = $_POST['dsa_beneficiary'];
+                $postFields['dsa_payor'] = $_POST['dsa_payor'];
+            }
+
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -190,19 +211,246 @@ class AdsWizardController{
                     $this->throwFacebookApiException($decoded['error']);
                 }
 
+                $_SESSION['wizard-adset'] = $postFields;
+                $_SESSION['wizard-adset']['id'] = $decoded['id'] ?? null;
+                
                 echo "Ad Set <strong>{$_POST['adset_name']}</strong> created successfully!<br>";
                 echo "Ad Set ID: " . $decoded['id'] . "<br>";
-                echo "Daily budget: {$_POST['daily_budget']}<br>"; // TODO: Make it so that it adds decimal to not confuse user i.e. 15.00 rather than 1500
+                $raw = (int) ($_POST['daily_budget'] ?? 0);     
+                $display = number_format($raw / 100, 2, '.', ',');
+                echo "Daily budget: {$display}SEK<br>";
                 echo "Target Country: SE<br>";
 
             } catch (\Exception $e) {
+
                 echo "Error creating Ad Set: <br>";
                 echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
             }
-            echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+            echo "<a href='/Merchant/public/adsWizard/createAdCreativeWizard'>Next step</a>";
         }
         
     }
 
+    public function createAdCreativeWizard()
+    {
+        $fbClient = $this->buildClient();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            
+            $userManager = new User();
+            $catalogs = $userManager->getAllCatalogs($fbClient);
+            require_once __DIR__ . '/../views/ads-wizard/step-three-adcreative.php';
+        }
+        else{
 
+            $productSetId = $_SESSION['wizard-productset'];
+            $accessToken = $this->data['fb_access_token'];
+
+            $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/adcreatives";
+            $ch = curl_init($url);
+            
+
+
+            // Changes the data sent to the API depending on the objective type
+            if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_TRAFFIC'){
+                $imageHash = $this->imageHash();
+                $objectStorySpec = [
+                    'page_id' => $_POST['page_id'],
+                    'link_data' => [
+                        'link' => $_POST['link'] ?? 'https://www.example.com',
+                        'message' => $_POST['message'],
+                        'image_hash' => $imageHash,
+                        'call_to_action' => [
+                            'type' => $_POST['call_to_action'],
+                            'value' => [
+                                'link' => $_POST['link'] ?? 'https://www.example.com'
+                            ]
+                        ]
+                    ]
+                ];
+                
+                $postFields = [
+                    'name' => $_POST['creative_name'] ?? 'MyAdCreative',
+                    'object_story_spec' => json_encode($objectStorySpec),
+                    'access_token' => $this->data['fb_access_token']
+                ];
+            }
+            else if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_SALES'){
+
+                $productResponse = $fbClient->get(
+                    "/$productSetId/products?fields=name,retailer_id,price,sale_price,url&limit=1",
+                    $accessToken
+                );
+
+                $productData = $productResponse->getDecodedBody()['data'][0];
+
+                if(empty($_POST['description'])){
+                    $_POST['description'] = 'Now only ' . $productData['sale_price'] . ' (was ' . $productData['price'] . ')';
+                }
+
+                $objectStorySpec = [
+                    'page_id' => $_POST['page_id'],
+                    'template_data' => [
+                        'link' => $_POST['link'] ?? 'https://www.example.com',
+                        'message' => $_POST['message'],
+                        'name' => $productData['name'],
+                        'description' => $_POST['description'],
+                        'call_to_action' => [
+                            'type' => $_POST['call_to_action'],
+                            'value' => [
+                                'link' => 'https://www.example.com' // optional fallback
+                            ]
+                        ],
+                    ]
+                            
+                ];
+                $postFields = [
+                    'name'               => $_POST['creative_name'] ?? 'MyAdCreative',
+                    'object_story_spec'  => json_encode($objectStorySpec),
+                    'access_token'       => $this->data['fb_access_token'],
+                    'product_set_id'     => $_SESSION['wizard-productset'],
+                    'catalog_id'         => $_SESSION['wizard-catalog-id'],
+                // 'dynamic_ad_voice'   => 'DYNAMIC'
+                    
+                ];
+            }
+            
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+            $error = curl_error($ch);
+            curl_close($ch);
+    
+            try {
+                if ($error) {
+                    throw new \Exception("cURL Error: " . $error);
+                }
+
+                $decoded = json_decode($response, true);
+
+                if (isset($decoded['error'])) {
+                    $this->throwFacebookApiException($decoded['error']);
+                }
+
+                $_SESSION['wizard-creative'] = $postFields;
+                $_SESSION['wizard-creative']['id'] = $decoded['id'] ?? null;
+
+                echo "Ad Creative " . $_POST['creative_name'] . " with ID: " . $response . " was successfully created!<br>";
+                echo "Call to action type: " . $_POST['call_to_action'] . "<br>";
+                echo "Link: " . $_POST['link'] . "      " . $_POST['page_id'] . "<br>Ad Message: \"" . $_POST['message'] . "\".";  
+            }
+            catch(\Exception $e){
+                echo "Error creating Ad Creative: <br>";
+                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+            }
+            
+            echo "<a href='/Merchant/public/adsWizard/createAdvertisementWizard'>Next step</a>";
+            
+        }
+    }
+
+    public function createAdvertisementWizard()
+    {
+        $userManager = new User();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+           
+            $adSet = $_SESSION['wizard-adset'];
+            $adCreative = $_SESSION['wizard-creative'];
+            //$productSetId = $_SESSION['wizard-creative']['product_set_id'];
+            if($_SESSION['wizard-campaign']['objective'] == "OUTCOME_SALES"){
+                $productSet = $userManager->getProductSetById($_SESSION['wizard-creative']['product_set_id'], $_SESSION['fb_access_token']);
+            }
+            
+            require_once __DIR__ . '/../views/ads-wizard/step-four-advertisement.php';
+        }
+        else{
+            $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/ads";
+            $ch = curl_init($url);
+
+            if(isset($_SESSION['wizard-adset']['id']) && isset($_SESSION['wizard-creative']['id'])){
+                $postFields = [
+                    'name'     => $_POST['ad_name'],
+                    'adset_id' => $_SESSION['wizard-adset']['id'],
+                    // The 'creative' field expects a JSON object containing 'creative_id'
+                    'creative' => json_encode([
+                        'creative_id' => $_SESSION['wizard-creative']['id']
+                    ]),
+                    // Keep it PAUSED to avoid going live immediately and having to pay
+                    'status'   => $_POST['status'] ?? 'PAUSED',
+                    'access_token' => $this->data['fb_access_token'],
+                ];
+            }
+            else{
+                echo "Ad Set and Ad Creative requires Id's";
+                return;
+            }
+           
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+            $response = curl_exec($ch);
+            $error = curl_error($ch);
+            curl_close($ch);
+           
+            try {
+                if ($error) {
+                    throw new \Exception("cURL Error: " . $error);
+                }
+
+                $decoded = json_decode($response, true);
+
+                if (isset($decoded['error'])) {
+                    $this->throwFacebookApiException($decoded['error']);
+                }
+
+                echo "Ad " . $_POST['ad_name'] . " with Id: " . $response . " was successfully created!<br>";
+                echo "This ad belongs to Ad Set with Id: " . $_POST['adset_id'] . " and Ad Creative with Id: " . $_POST['adcreative_id'] . ".<br>";
+                echo "Status: " . $_POST['status'];
+            }
+            catch(\Exception $e){
+                echo "Error creating Advertisement: <br>";
+                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+            }
+            
+            echo "<br><a href='/Merchant/public/fbdashboard'>Return</a>";
+            
+            
+        }
+    }
+    function throwFacebookApiException(array $error)
+    {
+        throw new \Exception(
+            "Facebook API Error: " . $error['message'] . "\n" .
+            "Type: " . $error['type'] . "\n" .
+            "Code: " . $error['code'] . "\n" .
+            "Subcode: " . ($error['error_subcode'] ?? 'N/A') . "\n" .
+            "Blame Field: " . json_encode($error['error_data']['blame_field_specs'] ?? []) . "\n" .
+            "Trace ID: " . ($error['fbtrace_id'] ?? 'N/A') . "\n" .
+            ($error['error_user_title'] ?? '') . ': ' . ($error['error_user_msg'] ?? '')
+        );
+    }
+
+    public function imageHash()
+    {
+        $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adimages";
+        $ch = curl_init($url);
+
+        $postFields = [
+            'filename' => new \CURLFile(__DIR__ . '/../images/dummy.png', 'image/png', 'dummy.png'),
+            'access_token' => $this->data['fb_access_token']
+        ];
+
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Decode the response to get the image hash
+        $data = json_decode($response, true);
+        $imageHash = $data['images']['dummy.png']['hash'] ?? null;
+
+        return $imageHash;
+    }
 }
