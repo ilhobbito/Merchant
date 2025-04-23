@@ -4,8 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step Four Advertisement</title>
+
+    <link rel="stylesheet" href="/Merchant/public/assets/css/boxes.css">
 </head>
 <body>
+
+<?php if (!empty($_SESSION['flash_adset'])): ?>
+    <div class="alert alert-success">
+        <h4><?= htmlspecialchars($_SESSION['flash_adset']['title']) ?></h4>
+        <p><?= $_SESSION['flash_adset']['body'] // already escaped above ?></p>
+    </div>
+    <?php unset($_SESSION['flash_adset']); ?>
+<?php endif; ?>
+
+<?php if (!empty($_SESSION['flash_ad_error'])): ?>
+    <div class="alert alert-danger">
+        <h4><?= nl2br(htmlspecialchars($_SESSION['flash_ad_error'])) ?></h4>
+    </div>
+    <?php unset($_SESSION['flash_ad_error']); ?>
+<?php endif; ?>
+
 <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
     <div style="display: flex; gap: 20px;">
         <div style="flex: 1;">

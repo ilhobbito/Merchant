@@ -4,27 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step Two Adset</title>
-    <style>
-        .description-box {
-        margin-top: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;    
-        border-radius: 4px;         
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        display: none;
-        width: 300px;
-        }
-
-        #product-list-container {
-            max-height: 120px;
-            overflow-y: auto;
-            padding: 10px;
-            margin-top: 10px;
-        }
-  </style>
+    
+    <link rel="stylesheet" href="/Merchant/public/assets/css/boxes.css">
 </head>
 <body>
+
+    <?php if (!empty($_SESSION['flash_campaign'])): ?>
+        <div class="alert alert-success">
+            <h4><?= htmlspecialchars($_SESSION['flash_campaign']['title']) ?></h4>
+            <p><?= $_SESSION['flash_campaign']['body'] // already escaped above ?></p>
+        </div>
+        <?php unset($_SESSION['flash_campaign']); ?>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['flash_adset_error'])): ?>
+    <div class="alert alert-danger">
+        <h4><?= nl2br(htmlspecialchars($_SESSION['flash_adset_error'])) ?></h4>
+    </div>
+    <?php unset($_SESSION['flash_adset_error']); ?>
+    <?php endif; ?>
+
     <a href='/Merchant/public/fbdashboard'>Return to dashboard</a><br><br>
     <h2>Step 2:  Ad Set</h2>
     <h4>The ad set for your campaign is where the rules are set, like who to target and how much you're willing to spend.</h4>

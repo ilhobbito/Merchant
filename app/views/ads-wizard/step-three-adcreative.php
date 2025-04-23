@@ -5,23 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step Three Ad Creative</title>
 
-    <style>
-        .description-box {
-        margin-top: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;    
-        border-radius: 4px;         
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        display: none;
-        width: 300px;
-        }
-  </style>
+    <link rel="stylesheet" href="/Merchant/public/assets/css/boxes.css">
 </head>
 <body>
     
-    <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
+    <?php if (!empty($_SESSION['flash_adset'])): ?>
+        <div class="alert alert-success">
+            <h4><?= htmlspecialchars($_SESSION['flash_adset']['title']) ?></h4>
+            <p><?= $_SESSION['flash_adset']['body'] // already escaped above ?></p>
+        </div>
+        <?php unset($_SESSION['flash_adset']); ?>
+    <?php endif; ?>
 
+    <?php if (!empty($_SESSION['flash_creative_error'])): ?>
+    <div class="alert alert-danger">
+        <h4><?= nl2br(htmlspecialchars($_SESSION['flash_creative_error'])) ?></h4>
+    </div>
+    <?php unset($_SESSION['flash_creative_error']); ?>
+    <?php endif; ?>
+
+    <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
     <h2>Step Three: Ad Creative</h2>
     <h4>Ad creative is where you put up the content like images and description texts.</h4>
     <?php if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_SALES'){

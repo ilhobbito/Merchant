@@ -62,11 +62,12 @@ class AdsWizardController{
 
             $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/campaigns";
 
-            if(!isset($_POST['campaign_name'])){
-                echo "A campaign name must be set!";
-                return;
+            $name = trim($_POST['campaign_name'] ?? '');
+            if ($name === '') {
+            $_SESSION['flash_campaign_error'] = 'Please enter a campaign name.';
+            require_once __DIR__ . '/../views/ads-wizard/step-one-campaign.php';
+            return;
             }
-        
             // Create a new cURL resource
             $ch = curl_init($url);
 
@@ -102,16 +103,26 @@ class AdsWizardController{
                 }
                 $_SESSION['wizard-campaign'] = $postFields;
                 $_SESSION['wizard-campaign']['id'] = $decoded['id'] ?? null;
-                echo "Campaign \"" .$_POST['campaign_name'] . "\" with ID '" . $response . "' successfully created<br>";
-                echo "Status: "  . $_POST['status'] . "     Objective: " . $_POST['objective'] . "<br>";
-                echo "<a href='/Merchant/public/adsWizard/createAdSetWizard'>Next step</a>";
-                
-               
+
+                $_SESSION['flash_campaign'] = [
+                    'title'   => "Campaign \"" .$_POST['campaign_name'] . "\" was successfully created!",
+                    'body'    => "ID: {$decoded['id']}<br>"
+                                . "Status: {$_POST['status']}<br>"
+                                . "Objective: {$_POST['objective']}",
+                    ];
+    
+                    header('Location: createAdSetWizard');
+                    exit;                          
             }
             catch(\Exception $e){
-                echo "Error creating Campaign: <br>";
-                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
-                echo "<a href='/Merchant/public/fbdashboard'>Return</a>";
+
+                $_SESSION['flash_campaign_error'] = $e->getMessage();
+                $fbClient    = $this->buildClient();
+                $userManager = new User();
+                $campaign    = $_SESSION['wizard-campaign']['id'];
+                $catalogs    = $userManager->getAllCatalogs($fbClient);
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
+                return;
             }
         }
 
@@ -120,38 +131,55 @@ class AdsWizardController{
     // Makes an API request to Post an Ad Set to the users Ads Account
     public function createAdSetWizard()
     {
+        $fbClient = $this->buildClient();
+        $userManager = new User();
+        $campaign = $_SESSION['wizard-campaign']['id'];
+        $catalogs = $userManager->getAllCatalogs($fbClient);
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-
-            $fbClient = $this->buildClient();
-            $userManager = new User();
-            $campaign = $_SESSION['wizard-campaign']['id'];
-            $catalogs = $userManager->getAllCatalogs($fbClient);
-
             require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';    
         }
 
         elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $campaign = $_SESSION['wizard-campaign']['id'];
-            $_SESSION['wizard-catalog-id'] = $_POST['catalog_id'];
-            $_SESSION['wizard-productset'] = $_POST['product_set'];
+
+            if($_SESSION['wizard-campaign']['objective'] === 'OUTCOME_SALES'){
+
+                if($_POST['catalog_id'] !== '' && $_POST['product_set'] !== 'none'){
+                    $_SESSION['wizard-catalog-id'] = $_POST['catalog_id'];
+                    $_SESSION['wizard-productset'] = $_POST['product_set'];
+                }
+                else{
+                    $_SESSION['flash_adset_error'] = 'A product set must be selected!';
+                    require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
+                    return;
+                }
+            }
+          
             $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/adsets";
             $ch = curl_init($url);
 
-            if(!isset($_POST['adset_name'])){
-                echo "A name for the Adset must be set!";
+
+            $name = trim($_POST['adset_name'] ?? '');
+            if ($name === '') {
+                $_SESSION['flash_adset_error'] = 'A name for the Ad set must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
                 return;
             }
             if(!isset($_POST['billing_event'])){
-                echo "A billing event must be set!";
+                $_SESSION['flash_adset_error'] = 'A billing event must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
                 return;
             }
             if(!isset($_POST['bid_strategy'])){
-                echo "A bid strategy must be set!";
+                $_SESSION['flash_adset_error'] = 'A bid strategy must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
                 return;
             }
             if(!isset($_POST['optimization_goal'])){
-                echo "An optimization goal must be set!";
+                $_SESSION['flash_adset_error'] = 'An optimization goal must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
                 return;
             }
             if(!isset($_POST['daily_budget']) || $_POST['daily_budget'] <= 0){
@@ -175,12 +203,11 @@ class AdsWizardController{
                 'status'          => $_POST['status'] ?? 'PAUSED',
                 'access_token'    => $this->data['fb_access_token'],
                 
-                // Advertisement Schedule
+                // Advertisement Schedule TODO: Make it so the user can set their own start and end times.
                 'start_time'        => (new \DateTime('+1 day'))->format(\DateTime::ISO8601),
                 'end_time'          => (new \DateTime('+7 days'))->format(\DateTime::ISO8601),
 
                 'promoted_object[pixel_id]'         => $_ENV['PIXEL_ID'], // TODO: Make Pixel more dynamic in case more than one pixel exists
-                //'promoted_object[product_set_id]'   => $_POST['product_set'],
                 'promoted_object[custom_event_type]'=> 'PURCHASE',
 
             ];
@@ -188,10 +215,15 @@ class AdsWizardController{
                 $postFields['bid_amount'] = (int) $_POST['bid_amount'];
             }
 
-            if (isset($_POST['dsa_beneficiary']) && isset($_POST['dsa_payor'])){
-                $postFields['dsa_beneficiary'] = $_POST['dsa_beneficiary'];
-                $postFields['dsa_payor'] = $_POST['dsa_payor'];
-            }
+            // if (isset($_POST['dsa_beneficiary']) && isset($_POST['dsa_payor'])){
+            //     $postFields['dsa_beneficiary'] = $_POST['dsa_beneficiary'];
+            //     $postFields['dsa_payor'] = $_POST['dsa_payor'];   
+            // }
+            // else{
+            //     $_SESSION['flash_adset_error'] = 'DSA beneficiary/payor must be set!';
+            //     require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
+            //     return;
+            // }
 
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
@@ -214,19 +246,32 @@ class AdsWizardController{
                 $_SESSION['wizard-adset'] = $postFields;
                 $_SESSION['wizard-adset']['id'] = $decoded['id'] ?? null;
                 
-                echo "Ad Set <strong>{$_POST['adset_name']}</strong> created successfully!<br>";
-                echo "Ad Set ID: " . $decoded['id'] . "<br>";
-                $raw = (int) ($_POST['daily_budget'] ?? 0);     
+                // Formats the budget price to show two decimals
+                $raw = (int) ($_POST['daily_budget'] ?? 0);
                 $display = number_format($raw / 100, 2, '.', ',');
-                echo "Daily budget: {$display}SEK<br>";
-                echo "Target Country: SE<br>";
+
+
+                $_SESSION['flash_adset'] = [
+                'title'   => "Ad Set “{$_POST['adset_name']}” was successfully created!",
+                'body'    => "ID: {$decoded['id']}<br>"
+                            . "Daily budget: {$display} SEK<br>"
+                            . "Target Country: SE",
+                ];
+
+                header('Location: createAdCreativeWizard');
+                exit;
 
             } catch (\Exception $e) {
 
-                echo "Error creating Ad Set: <br>";
-                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+                $_SESSION['flash_adset_error'] = $e->getMessage();
+                $fbClient    = $this->buildClient();
+                $userManager = new User();
+                $adset    = $_SESSION['wizard-adset']['id'];
+                $catalogs    = $userManager->getAllCatalogs($fbClient);
+                require_once __DIR__ . '/../views/ads-wizard/step-two-adset.php';
+                return;
             }
-            echo "<a href='/Merchant/public/adsWizard/createAdCreativeWizard'>Next step</a>";
+            echo "<a href='Merchant/public/adsWizard/createAdCreativeWizard'>Next step</a>";
         }
         
     }
@@ -249,7 +294,22 @@ class AdsWizardController{
             $ch = curl_init($url);
             
 
-
+            $name = trim($_POST['creative_name'] ?? '');
+            if ($name === '') {
+                $_SESSION['flash_creative_error'] = 'A name for the Ad creative must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-three-adcreative.php';
+                return;
+            }
+            if ($_POST['link'] == '') {
+                $_SESSION['flash_creative_error'] = 'A link can not be empty!';
+                require_once __DIR__ . '/../views/ads-wizard/step-three-adcreative.php';
+                return;
+            }
+            if ($_POST['page_id'] == '') {
+                $_SESSION['flash_creative_error'] = 'A proper page Id must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-three-adcreative.php';
+                return;
+            }
             // Changes the data sent to the API depending on the objective type
             if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_TRAFFIC'){
                 $imageHash = $this->imageHash();
@@ -309,7 +369,6 @@ class AdsWizardController{
                     'access_token'       => $this->data['fb_access_token'],
                     'product_set_id'     => $_SESSION['wizard-productset'],
                     'catalog_id'         => $_SESSION['wizard-catalog-id'],
-                // 'dynamic_ad_voice'   => 'DYNAMIC'
                     
                 ];
             }
@@ -334,17 +393,29 @@ class AdsWizardController{
 
                 $_SESSION['wizard-creative'] = $postFields;
                 $_SESSION['wizard-creative']['id'] = $decoded['id'] ?? null;
-
-                echo "Ad Creative " . $_POST['creative_name'] . " with ID: " . $response . " was successfully created!<br>";
-                echo "Call to action type: " . $_POST['call_to_action'] . "<br>";
-                echo "Link: " . $_POST['link'] . "      " . $_POST['page_id'] . "<br>Ad Message: \"" . $_POST['message'] . "\".";  
+                $_SESSION['flash_adset'] = [
+                    'title'   => "Ad Creative \"" .$_POST['creative_name'] . "\" was successfully created!",
+                    'body'    => "ID: {$decoded['id']}<br>"
+                                . "Call to Action: {$_POST['call_to_action']}<br>"
+                                . "Objective: {$_POST['objective']}<br>"
+                                . "Link: {$_POST['link']}  | Page Id: {$_POST['page_id']}<br>"
+                                . "Ad Message: \"{$_POST['message']}\"",
+                    ];
+    
+                    header('Location: createAdvertisementWizard');
+                    exit;                     
+               
             }
             catch(\Exception $e){
-                echo "Error creating Ad Creative: <br>";
-                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
-            }
-            
-            echo "<a href='/Merchant/public/adsWizard/createAdvertisementWizard'>Next step</a>";
+                $_SESSION['flash_creative_error'] = $e->getMessage();
+                $fbClient    = $this->buildClient();
+                $userManager = new User();
+                $creative    = $_SESSION['wizard-creative']['id'];
+                $catalogs    = $userManager->getAllCatalogs($fbClient);
+                require_once __DIR__ . '/../views/ads-wizard/step-three-adcreative.php';
+                return;
+
+            }           
             
         }
     }
@@ -352,21 +423,26 @@ class AdsWizardController{
     public function createAdvertisementWizard()
     {
         $userManager = new User();
+        $adSet = $_SESSION['wizard-adset'];
+        $adCreative = $_SESSION['wizard-creative'];
+        if($_SESSION['wizard-campaign']['objective'] == "OUTCOME_SALES"){
+            $productSet = $userManager->getProductSetById($_SESSION['wizard-creative']['product_set_id'], $_SESSION['fb_access_token']);
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-           
-            $adSet = $_SESSION['wizard-adset'];
-            $adCreative = $_SESSION['wizard-creative'];
-            //$productSetId = $_SESSION['wizard-creative']['product_set_id'];
-            if($_SESSION['wizard-campaign']['objective'] == "OUTCOME_SALES"){
-                $productSet = $userManager->getProductSetById($_SESSION['wizard-creative']['product_set_id'], $_SESSION['fb_access_token']);
-            }
-            
             require_once __DIR__ . '/../views/ads-wizard/step-four-advertisement.php';
         }
         else{
             $url = "https://graph.facebook.com/v22.0/{$this->data['ads_id']}/ads";
             $ch = curl_init($url);
 
+
+            $name = trim($_POST['ad_name'] ?? '');
+            if ($name === '') {
+                $_SESSION['flash_ad_error'] = 'A name for the Advertisement must be set!';
+                require_once __DIR__ . '/../views/ads-wizard/step-four-advertisement.php';
+                return;
+            }
             if(isset($_SESSION['wizard-adset']['id']) && isset($_SESSION['wizard-creative']['id'])){
                 $postFields = [
                     'name'     => $_POST['ad_name'],
@@ -409,8 +485,13 @@ class AdsWizardController{
                 echo "Status: " . $_POST['status'];
             }
             catch(\Exception $e){
-                echo "Error creating Advertisement: <br>";
-                echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+                $_SESSION['flash_ad_error'] = $e->getMessage();
+                $fbClient    = $this->buildClient();
+                $userManager = new User();
+                $ad    = $_SESSION['wizard-advertisement']['id'];
+                $catalogs    = $userManager->getAllCatalogs($fbClient);
+                require_once __DIR__ . '/../views/ads-wizard/step-four-advertisement.php';
+                return;       
             }
             
             echo "<br><a href='/Merchant/public/fbdashboard'>Return</a>";

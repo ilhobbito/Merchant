@@ -4,20 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step One Campaign</title>
-    <style>
-       .description-box {
-        margin-top: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;    
-        border-radius: 4px;         
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        display: none;
-        width: 300px;
-        }
-  </style>
+
+    <link rel="stylesheet" href="/Merchant/public/assets/css/boxes.css">
 </head>
 <body>
+
+    <?php if (!empty($_SESSION['flash_campaign_error'])): ?>
+    <div class="alert alert-danger">
+        <h4><?= nl2br(htmlspecialchars($_SESSION['flash_campaign_error'])) ?></h4>
+    </div>
+    <?php unset($_SESSION['flash_campaign_error']); ?>
+    <?php endif; ?>
+
     <a href='/Merchant/public/fbdashboard'>Return to dashboard</a><br><br>
 
     <h2>Welcome to the Ads Wizard</h2>
@@ -26,7 +24,6 @@
     <form method="POST" action="createCampaignWizard">
         <label for="campaign_name">Campaign Name: </label>
         <input type="text" name="campaign_name" id="campaign_name">
-
         <br><br>
 
     <label for="objective">Objective: </label>
