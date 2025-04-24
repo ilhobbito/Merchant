@@ -10,6 +10,7 @@
 <?php
 if (!empty($products)) {
                 foreach ($products as $product) {
+                    echo "Title: " . $product->getTitle() . "<br>";
                     echo "Product ID: " . $product->getId() . "<br>";
                 }
             } else {
