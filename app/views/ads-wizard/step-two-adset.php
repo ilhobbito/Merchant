@@ -32,7 +32,8 @@
         <div style="flex: 1;">
             <form method="POST" action="createAdsetWizard" id="adset-form">
                 <label for="adset_name">Adset Name: </label><br>
-                <input type="text" name="adset_name" id="adset_name">
+                <input type="text" name="adset_name" id="adset_name"
+                value="<?php echo isset($_POST['adset_name']) ? htmlspecialchars($_POST['adset_name']) : ''; ?>">
                 <br><br>
 
                 <!-- TODO: Add a number of product sets for each catalog to display on the side -->
@@ -68,7 +69,8 @@
                                     // Skip to avoid duplicate
                                     continue;
                                 } else {
-                                    echo "<option value=\"{$catalog['id']}\">" . htmlspecialchars($catalog['name']) . ", Id: {$catalog['id']}</option>";
+                                    $selected = (isset($_POST['catalog_id']) && $_POST['catalog_id'] == $catalog['id']) ? 'selected' : '';
+                                    echo "<option value=\"{$catalog['id']}\" $selected>" . htmlspecialchars($catalog['name']) . ", Id: {$catalog['id']}</option>";
                                 }
                         }
                         echo "</select>";
@@ -76,14 +78,13 @@
                 </select>
                 <br><br>
 
-
                 <div id="product-select-box">
                     <h4>Don't find a product set that you want to use? Create one with the side button.</h4>
                     <div style="display: flex; gap: 20px;">
                         <div>            
                             <label for="product_set">Product Set: </label>
-                            <select name="product_set" id="product_set">
-                                <option value="">-- Select a Product Set --</option>
+                            <select name="product_set" id="product_set" data-selected="<?php echo isset($_POST['product_set']) ? htmlspecialchars($_POST['product_set']) : ''; ?>">
+                                <option value="">Please select a catalog first</option>
                             </select>
                             <br><br>
                         </div>
@@ -103,7 +104,8 @@
                     This is counted in minimals wich means that 1000 will be 10.00 in the currency that is set when you make your ads account. The minimal amount you can set is 1500.
                 </h4>
                 <label for="daily_budget">Daily Budget: </label>
-                <input type="number" name="daily_budget" id="daily_budget" min="1500">
+                <input type="number" name="daily_budget" id="daily_budget" min="1500"
+                value="<?php echo isset($_POST['daily_budget']) ? htmlspecialchars($_POST['daily_budget']) : ''; ?>">
                 <br><br>
 
 <hr>
@@ -111,7 +113,7 @@
                 <h4>A billing event determines when you're charged for your ad. 
                     It defines what user action triggers payment based on your campaign objective.</h4>
                 <label for="billing_event">Billing Event: </label>
-                <select name="billing_event" id="billing_event">
+                <select name="billing_event" id="billing_event" data-selected="<?= isset($_POST['billing_event']) ? htmlspecialchars($_POST['billing_event']) : '' ?>">
                 </select>
                 <br><br>
                 
@@ -119,12 +121,13 @@
 <hr>
                 <h4>A bid strategy is Facebooks way to automatically disperse your money for your ads.</h4>
                 <label for="bid_strategy">Bid Strategy: </label>
-                        <select name="bid_strategy" id="bid_strategy">
-                            <option value="LOWEST_COST_WITHOUT_CAP">Lowest cost without cap</option>
-                            <option value="LOWEST_COST_WITH_BID_CAP">Lowest cost with cap</option>
-                            <option value="COST_CAP">Cost cap</option>
-                        </select>
-                        <br><br>
+                <select name="bid_strategy" id="bid_strategy" data-selected="<?= isset($_POST['bid_strategy']) ? htmlspecialchars($_POST['bid_strategy']) : '' ?>">
+                    <option value="LOWEST_COST_WITHOUT_CAP">Lowest cost without cap</option>
+                    <option value="LOWEST_COST_WITH_BID_CAP">Lowest cost with cap</option>
+                    <option value="COST_CAP">Cost cap</option>
+                </select>
+                <br><br>
+
                 <div style="display:flex;gap:20px;">
                     <div>
                         <p id="bid-strategy-description" class="description-box" style="display: block;"></p>
@@ -134,14 +137,15 @@
                         <h4>Set cost cap</h4>
                         <h3 id="bid_amount_warning" style="color:red;">Warning! Your cost cap is exceeding your daily budget, may affect your ad performance!</h3>
                         <label for="bid_amount">Cost Cap: </label>
-                        <input id="bid_amount" name="bid_amount" type="number" min="1">
+                        <input id="bid_amount" name="bid_amount" type="number" min="1"
+                        value="<?php echo isset($_POST['bid_amount']) ? htmlspecialchars($_POST['bid_amount']) : ''; ?>">
                     </div>
                 </div>
                 
                 
 <hr>
                 <label for="optimization_goal">Optimization Goal: </label>
-                <select name="optimization_goal" id="optimization_goal">
+                <select name="optimization_goal" id="optimization_goal" data-selected="<?= isset($_POST['optimization_goal']) ? htmlspecialchars($_POST['optimization_goal']) : '' ?>">
                 </select>
                 <br><br>
                 
@@ -152,19 +156,21 @@
                     the ads while beneficiary is who owns the products in a catalog.</span><br><br>
                 
                     <label for="dsa_beneficiary">DSA Beneficiary: </label>
-                    <input type="text" name="dsa_beneficiary" id="dsa_beneficiary">
+                    <input type="text" name="dsa_beneficiary" id="dsa_beneficiary"
+                    value="<?php echo isset($_POST['dsa_beneficiary']) ? htmlspecialchars($_POST['dsa_beneficiary']) : ''; ?>">
                     <br><br>
 
                     <label for="dsa_payor">DSA Payor:</label>
-                    <input type="text" name="dsa_payor" id="dsa_payor">    
+                    <input type="text" name="dsa_payor" id="dsa_payor"
+                    value="<?php echo isset($_POST['dsa_payor']) ? htmlspecialchars($_POST['dsa_payor']) : ''; ?>">    
                     <br><br>
                 </div>
                 
 
                 <label for="status">Status: </label>
-                <select name="status" id="status">
-                    <option value="PAUSED" selected>Paused</option>
-                    <option value="ACTIVE" disabled>Active</option>
+                <select name="status" id="status" data-selected="<?= isset($_POST['optimization_goal']) ? htmlspecialchars($_POST['optimization_goal']) : '' ?>">
+                <option value="PAUSED">Paused</option>
+                <option value="ACTIVE">Active</option>
                 </select>
                 <br><br>
                 <button type="submit" name="create_adset">Create Adset</button>

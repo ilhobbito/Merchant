@@ -23,14 +23,14 @@
     <h3>Start by creating a campaign</h3>
     <form method="POST" action="createCampaignWizard">
         <label for="campaign_name">Campaign Name: </label>
-        <input type="text" name="campaign_name" id="campaign_name">
+        <input type="text" name="campaign_name" id="campaign_name"
+        value="<?php echo isset($_POST['campaign_name']) ? htmlspecialchars($_POST['campaign_name']) : ''; ?>">
         <br><br>
 
     <label for="objective">Objective: </label>
     <select name="objective" id="objective">
-
-        <option value="OUTCOME_TRAFFIC">Traffic</option>
-        <option value="OUTCOME_SALES">Sales</option>
+        <option value="OUTCOME_TRAFFIC" <?php echo (isset($_POST['objective']) && $_POST['objective'] === 'OUTCOME_TRAFFIC') ? 'selected' : ''; ?>>Traffic</option>
+        <option value="OUTCOME_SALES" <?php echo (isset($_POST['objective']) && $_POST['objective'] === 'OUTCOME_SALES') ? 'selected' : ''; ?>>Sales</option>
         <option value="OUTCOME_LEADS" disabled>Leads -- Disabled --</option>
         <option value="OUTCOME_AWARENESS" disabled>Awareness -- Disabled --</option>
         <option value="OUTCOME_ENGAGEMENT" disabled>Engagement -- Disabled --</option> 
@@ -44,8 +44,8 @@
     <br><br>
     <label for="status">Status: </label>
     <select name="status" id="status">
-        <option value="PAUSED" selected>Paused</option>
-        <option value="ACTIVE">Active</option>
+        <option value="PAUSED"  <?php echo (isset($_POST['status']) && $_POST['status'] === 'PAUSED') ? 'selected' : ''; ?>>Paused</option>
+        <option value="ACTIVE" <?php echo (isset($_POST['status']) && $_POST['status'] === 'ACTIVE') ? 'selected' : ''; ?>>Active</option>
     </select>
     <br><br>
     <!-- Description box -->

@@ -483,6 +483,8 @@ class AdsWizardController{
                 echo "Ad " . $_POST['ad_name'] . " with Id: " . $response . " was successfully created!<br>";
                 echo "This ad belongs to Ad Set with Id: " . $_POST['adset_id'] . " and Ad Creative with Id: " . $_POST['adcreative_id'] . ".<br>";
                 echo "Status: " . $_POST['status'];
+                header('Location: resultWizard');
+                exit;    
             }
             catch(\Exception $e){
                 $_SESSION['flash_ad_error'] = $e->getMessage();
@@ -499,6 +501,26 @@ class AdsWizardController{
             
         }
     }
+
+    function resultWizard(){
+        $userManager = new User();
+        $campaign = $_SESSION['wizard-campaign'];
+        $adset = $_SESSION['wizard-adset'];
+        $creative = $_SESSION['wizard-creative'];
+        if($_SESSION['wizard-campaign']['objective'] == "OUTCOME_SALES"){
+            $productSet = $userManager->getProductSetById($_SESSION['wizard-creative']['product_set_id'], $_SESSION['fb_access_token']);
+            $catalog = $userManager->getCatalogById($_SESSION['wizard-catalog-id'], $_SESSION['fb_access_token']);
+        }
+        if (isset($adset['targeting']) && is_string($adset['targeting'])) {
+            $adset['targeting'] = json_decode($adset['targeting'], true); // true = associative array
+        }
+        
+        if (isset($creative['object_story_spec']) && is_string($creative['object_story_spec'])) {
+            $creative['object_story_spec'] = json_decode($creative['object_story_spec'], true); // true = associative array
+        }
+        require_once __DIR__ . '/../views/ads-wizard/end-screen.php';
+    }
+    
     function throwFacebookApiException(array $error)
     {
         throw new \Exception(
