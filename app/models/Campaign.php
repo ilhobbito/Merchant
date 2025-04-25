@@ -29,7 +29,7 @@ class Campaign{
 
     public function getAdSets($ads_id, $fb_access_token){
 
-        $url = "https://graph.facebook.com/v17.0/{$ads_id}/adsets?access_token={$fb_access_token}&fields=id,name,daily_budget,billing_event,bid_strategy,optimization_goal";
+        $url = "https://graph.facebook.com/v22.0/{$ads_id}/adsets?access_token={$fb_access_token}&fields=id,name,daily_budget,billing_event,bid_strategy,optimization_goal,promoted_object";
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -48,7 +48,7 @@ class Campaign{
 
     public function getAdCreatives($ads_id, $fb_access_token){
 
-        $url = "https://graph.facebook.com/v17.0/{$ads_id}/adcreatives?access_token={$fb_access_token}&fields=id,name,object_story_spec";
+        $url = "https://graph.facebook.com/v17.0/{$ads_id}/adcreatives?access_token={$fb_access_token}&fields=id,name,object_story_spec&effective_status=['ACTIVE']";
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -62,6 +62,44 @@ class Campaign{
             return ['error' => $adCreatives['error']['message']];
         } else {
             return ['error' => 'Could not load ad creatives- unexpected response'];
+        }
+    }
+
+    public function deleteAdCreatives($ads_id, $fb_access_token) {
+        
+        $adCreatives = $this->getAdCreatives($ads_id, $fb_access_token);
+
+        // STEP 2: Loop through each creative
+        foreach ($adCreatives['data'] as $creative) {
+            $id = $creative['id'];
+            $name = isset($creative['name']) ? $creative['name'] : 'No Name';
+    
+            // STEP 3: Filter logic – customize this!
+            if (stripos($name, 'TEST') !== false || empty($name)) {
+                echo "Deleting creative: {$name} (ID: {$id})...\n";
+    
+                // STEP 4: Make DELETE call
+                $deleteUrl = "https://graph.facebook.com/v22.0/{$id}?access_token={$fb_access_token}";
+                $delCh = curl_init($deleteUrl);
+                curl_setopt($delCh, CURLOPT_CUSTOMREQUEST, "DELETE");
+                curl_setopt($delCh, CURLOPT_RETURNTRANSFER, true);
+                $deleteResponse = curl_exec($delCh);
+                $error = curl_error($delCh);
+                curl_close($delCh);
+    
+                if ($error) {
+                    echo "Error deleting {$id}: {$error}\n";
+                } else {
+                    $result = json_decode($deleteResponse, true);
+                    if (isset($result['success']) && $result['success']) {
+                        echo "Successfully deleted {$id}!\n";
+                    } else {
+                        echo "Failed to delete {$id}. Response: {$deleteResponse}\n";
+                    }
+                }
+            } else {
+                echo "Keeping creative: {$name} (ID: {$id})\n";
+            }
         }
     }
 }

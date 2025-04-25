@@ -7,11 +7,12 @@
 </head>
 <body>
     <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
+    <h2>Create Adset</h2>
     <div style="display: flex; gap: 20px;">
         <!-- Form container -->
         <div style="flex: 1;">
             <form method="POST" action="createAdset">
-                <label for="adset_name">Adset Name: </label>
+                <label for="adset_name">Adset Name:</label>
                 <input type="text" name="adset_name" id="adset_name">
                 <br><br>
 
@@ -23,6 +24,37 @@
                     <?php }?>
                 </select><br><br>
 
+                <!-- TODO: Add a number of product sets for each catalog to display on the side -->
+                 <h4>Select a catalog and product set</h4>
+
+                <label for="catalog_id">Catalog: </label>
+                <select name="catalog_id" id="catalog_id">
+                <?php if (isset($_SESSION['last_created_catalog'])): ?>
+                    <option value="" disabled>== Last Created Catalog ==</option>
+                    <option value="<?= $_SESSION['last_created_catalog']['id'] ?>" selected>
+                        <?= htmlspecialchars($_SESSION['last_created_catalog']['name']) ?>, Id: <?= $_SESSION['last_created_catalog']['id'] ?>
+                    </option>
+                    <option value="" disabled>==========================</option>
+                <?php endif; 
+ 
+                    foreach($catalogs as $catalog){
+                        if(isset($_SESSION['last_created_catalog']) && $catalog['id'] === $_SESSION['last_created_catalog']['id']){
+                            // Skip to avoid duplicate
+                            continue;
+                        } else {
+                            echo "<option value=\"{$catalog['id']}\">" . htmlspecialchars($catalog['name']) . ", Id: {$catalog['id']}</option>";
+                        }
+                    }
+                ?>
+                </select>
+                <br><br>
+
+                <label for="product_set">Product Set: </label>
+                <select name="product_set" id="product_set">
+                    <option value="">-- Select a Product Set --</option>
+                </select>
+                <br><br>
+
                 <h3>Select a daily budget, 1000 = 10.00 sek</h3>
                 <label for="daily_budget">Daily Budget: </label>
                 <input type="number" name="daily_budget" id="daily_budget" min="1500">
@@ -33,16 +65,19 @@
                     <option value="IMPRESSIONS">Impressions</option>
                 </select>
                 <br><br>
-
+                <!-- TODO: Add AJAX To make a field appear for budget cap whe nselecting LOWEST_COST_WITH_BID_CAP -->
                 <label for="bid_strategy">Bid Strategy: </label>
                 <select name="bid_strategy" id="bid_strategy">
                     <option value="LOWEST_COST_WITHOUT_CAP">Lowest cost without cap</option>
+                    <option value="LOWEST_COST_WITH_BID_CAP">Lowest cost with cap</option>
+                    
                 </select>
                 <br><br>
 
                 <label for="optimization_goal">Optimization Goal: </label>
                 <select name="optimization_goal" id="optimization_goal">
                     <option value="LINK_CLICKS">Link Clicks</option>
+                    <option value="OFFSITE_CONVERSIONS">Offsite Conversions</option>
                 </select>
                 <br><br>
                 
@@ -64,5 +99,7 @@
             </form>
         </div>
     </div>
+
+<script src="/Merchant/public/assets/js/catalog-handler.js"></script>
 </body>
 </html>

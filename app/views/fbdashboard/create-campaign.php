@@ -18,10 +18,10 @@
     <select name="objective" id="objective">
 
         <option value="OUTCOME_TRAFFIC">Traffic</option>
+        <option value="OUTCOME_SALES">Sales</option>
         <option value="OUTCOME_LEADS" disabled>Leads -- Disabled --</option>
         <option value="OUTCOME_AWARENESS" disabled>Awareness -- Disabled --</option>
-        <option value="OUTCOME_ENGAGEMENT" disabled>Engagement -- Disabled --</option>
-        <option value="OUTCOME_SALES" disabled>Sales</option>
+        <option value="OUTCOME_ENGAGEMENT" disabled>Engagement -- Disabled --</option> 
         <option value="OUTCOME_APP_PROMOTION" disabled>App Promotion -- Disabled --</option>
     </select>
     <br><br>

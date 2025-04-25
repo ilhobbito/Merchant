@@ -61,7 +61,7 @@ class AuthenticationController
         $fb = $this->buildClient();
 
         $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['email', 'catalog_management', 'business_management', 'ads_management'];
+        $permissions = ['email', 'catalog_management', 'business_management', 'ads_management', 'pages_show_list', 'whatsapp_business_management', 'pages_read_engagement', 'pages_manage_ads'];
 
         // The callback route for Facebook
         $callbackUrl = 'https://127.0.0.1/Merchant/public/authentication/facebookCallback';
