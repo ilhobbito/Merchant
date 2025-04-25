@@ -74,7 +74,8 @@ class GoogleAdsController{
 
         // Use GAQL to check for campaigns
         $payload = json_encode([
-        "query" => "SELECT campaign.id, campaign.name FROM campaign LIMIT 10"
+
+        "query" => "SELECT campaign.id, campaign.name, campaign.status FROM campaign LIMIT 100"
         ]);
 
         // Builds an API call with the data previously provided, in this case it is a Post with the payload GAQL
@@ -90,6 +91,243 @@ class GoogleAdsController{
         require_once '../app/views/googleads/list-campaign.php';
         
     }
+
+    public function createCampaign(): void
+    {
+        require_once __DIR__ . '/../views/googleads/create-campaign.php';
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID'];
+        $customerId = $_ENV['CUSTOMER_ID'];
+        $storedToken = json_decode(file_get_contents('token.json'), true);
+        if (!isset($storedToken['refresh_token'])) {
+            echo "Error: No refresh token!";
+            return;
+        }
+
+        $tokenData = $this->client->fetchAccessTokenWithRefreshToken($storedToken['refresh_token']);
+        $accessToken = $tokenData['access_token'] ?? null;
+        if (!$accessToken) {
+            echo "Error: No access token!";
+            return;
+        }
+
+        $storedIni = parse_ini_file('../google_ads_php.ini', true);
+        $developerToken = $storedIni['GOOGLE_ADS']['developerToken'] ?? null;
+        if (!$developerToken) {
+            echo "Error: No developer token!";
+            return;
+        }
+
+        $headers = [
+            "Authorization: Bearer $accessToken",
+            "developer-token: $developerToken",
+            "Content-Type: application/json",
+            "login-customer-id: $managerCustomerId"
+        ];
+
+        $campaignName = $_POST['campaign_name'] ?? null;
+        $budgetUsd = floatval($_POST['budget_usd'] ?? 0);
+        if (!$campaignName || $budgetUsd <= 0) {
+            echo "Error: Name and valid budget required!";
+            return;
+        }
+
+        $budgetMicros = intval($budgetUsd * 1000000);
+        $mutateUrl = "https://googleads.googleapis.com/v19/customers/{$customerId}/googleAds:mutate";
+
+        // Budget request
+        $budgetPayload = json_encode([
+            "mutateOperations" => [[
+                "campaignBudgetOperation" => ["create" => [
+                    "name" => "Budget for " . $campaignName,
+                    "amount_micros" => $budgetMicros,
+                    "delivery_method" => "STANDARD",
+                    "explicitly_shared" => false
+                ]]
+            ]]
+        ]);
+
+        $ch = curl_init($mutateUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $budgetPayload
+        ]);
+        $budgetResponse = curl_exec($ch);
+        curl_close($ch);
+
+        $budgetData = json_decode($budgetResponse, true);
+        $campaignBudget = $budgetData['mutateOperationResponses'][0]['campaignBudgetResult']['resourceName'] ?? null;
+
+        if (!$campaignBudget) {
+            echo "Error creating budget!<br><pre>" . htmlspecialchars($budgetResponse) . "</pre>";
+            return;
+        }
+
+        echo "Budget created: $campaignBudget<br>";
+
+        // Campaign request
+        $campaignPayload = json_encode([
+            "mutateOperations" => [[
+                "campaignOperation" => ["create" => [
+                    "name" => $campaignName,
+                    "advertising_channel_type" => "SEARCH",
+                    "status" => "PAUSED",
+                    "campaign_budget" => $campaignBudget,
+                    "start_date" => date('Ymd', strtotime('+1 day')),
+                    "end_date" => date('Ymd', strtotime('+30 days')),
+                    "manual_cpc" => ["enhanced_cpc_enabled" => false]
+                ]]
+            ]]
+        ]);
+
+        $ch = curl_init($mutateUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $campaignPayload
+        ]);
+        $campaignResponse = curl_exec($ch);
+        curl_close($ch);
+
+        echo "Campaign response: <pre>" . htmlspecialchars($campaignResponse) . "</pre>";
+    }
+
+    public function editCampaign(): array
+{
+    require_once __DIR__ . '/../views/googleads/edit-campaign.php';
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        return ['success' => false, 'error' => 'Invalid request method'];
+    }
+
+    $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID'];
+    $customerId = $_ENV['CUSTOMER_ID'];
+    $storedToken = json_decode(file_get_contents('token.json'), true);
+    $accessToken = $this->client->fetchAccessTokenWithRefreshToken($storedToken['refresh_token'])['access_token'] ?? null;
+    if (!$accessToken) {
+        return ['success' => false, 'error' => 'No access token'];
+    }
+
+    $developerToken = parse_ini_file('../google_ads_php.ini', true)['GOOGLE_ADS']['developerToken'] ?? null;
+    if (!$developerToken) {
+        return ['success' => false, 'error' => 'No developer token'];
+    }
+
+    $headers = [
+        "Authorization: Bearer $accessToken",
+        "developer-token: $developerToken",
+        "Content-Type: application/json",
+        "login-customer-id: $managerCustomerId"
+    ];
+
+    $campaignId = $_POST['campaign_id'] ?? null;
+    $newName = $_POST['campaign_name'] ?? null;
+    if (!$campaignId || !$newName) {
+        return ['success' => false, 'error' => 'Campaign ID and name are required'];
+    }
+
+    $payload = json_encode([
+        "mutateOperations" => [[
+            "campaignOperation" => [
+                "update" => [
+                    "resourceName" => "customers/{$customerId}/campaigns/{$campaignId}",
+                    "name" => $newName
+                ],
+                "updateMask" => "name"
+            ]
+        ]]
+    ]);
+
+    $ch = curl_init("https://googleads.googleapis.com/v19/customers/{$customerId}/googleAds:mutate");
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        $error = json_decode($response, true)['error'] ?? ['message' => 'Unknown error'];
+        return ['success' => false, 'error' => "API error: " . ($error['message'] ?? 'No error message')];
+    }
+
+    $responseData = json_decode($response, true);
+    if (isset($responseData['results'])) {
+        return ['success' => true, 'error' => ''];
+    }
+
+    return ['success' => false, 'error' => 'Unexpected API response'];
+}
+
+public function deleteCampaign(): array
+{
+    require_once __DIR__ . '/../views/googleads/edit-campaign.php';
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        return ['success' => false, 'error' => 'Invalid request method'];
+    }
+
+    $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID'];
+    $customerId = $_ENV['CUSTOMER_ID'];
+    $storedToken = json_decode(file_get_contents('token.json'), true);
+    $accessToken = $this->client->fetchAccessTokenWithRefreshToken($storedToken['refresh_token'])['access_token'] ?? null;
+    if (!$accessToken) {
+        return ['success' => false, 'error' => 'No access token'];
+    }
+
+    $developerToken = parse_ini_file('../google_ads_php.ini', true)['GOOGLE_ADS']['developerToken'] ?? null;
+    if (!$developerToken) {
+        return ['success' => false, 'error' => 'No developer token'];
+    }
+
+    $headers = [
+        "Authorization: Bearer $accessToken",
+        "developer-token: $developerToken",
+        "Content-Type: application/json",
+        "login-customer-id: $managerCustomerId"
+    ];
+
+    $campaignId = $_POST['campaign_id'] ?? null;
+    if (!$campaignId) {
+        return ['success' => false, 'error' => 'Campaign ID is required'];
+    }
+
+    $payload = json_encode([
+        "mutateOperations" => [[
+            "campaignOperation" => [
+                "remove" => "customers/{$customerId}/campaigns/{$campaignId}"
+            ]
+        ]]
+    ]);
+
+    $ch = curl_init("https://googleads.googleapis.com/v19/customers/{$customerId}/googleAds:mutate");
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        $error = json_decode($response, true)['error'] ?? ['message' => 'Unknown error'];
+        return ['success' => false, 'error' => "API error: " . ($error['message'] ?? 'No error message')];
+    }
+
+    $responseData = json_decode($response, true);
+    if (isset($responseData['results'])) {
+        return ['success' => true, 'error' => ''];
+    }
+
+    return ['success' => false, 'error' => 'Unexpected API response'];
+}
 
     function createTestClient(): void
     {
@@ -136,9 +374,11 @@ class GoogleAdsController{
         printf("Test client account created with resource name: %s\n", $response->getResourceName());
         echo "<a href='/Merchant/public/googleads'><br>Return</a>";
     }
+
 }
 
-    public function listAccountsWithLibrary()
+
+        function listAccountsWithLibrary()
     {
         // Had a ton of trouble to read OAuth2 Credentials from the google_ads_php.ini file so 
         // had to build them individually and then merge them to be able to read it correctly.
@@ -164,8 +404,8 @@ class GoogleAdsController{
 
     }
 
-    public function setTestBudget(){
 
+     function setTestBudget(){
         // Makes token.json's data retrievable
         $storedToken = json_decode(file_get_contents('token.json'), true);
 
@@ -273,6 +513,5 @@ class GoogleAdsController{
         }
         require_once '../app/views/googleads/set-test-budget.php';
     }
-    
-    
 }
+

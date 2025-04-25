@@ -15,7 +15,10 @@ if (!isset($_SESSION['google_access_token'])) {
 <body>
     <h2>Welcome to Google Ads</h2>
     <a href="<?php echo BASE_URL; ?>/googleads/createTestClient">Create Test Client</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/createCampaign">Create Campaign</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/editCampaign">Edit Campaign</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/listCampaign">List campaigns</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/setTestBudget">Set Test Budget</a><br>
-    <a href="<?php echo BASE_URL; ?>/googleads/listAccountsWithLibrary">List accounts</a>
+    <a href="<?php echo BASE_URL; ?>/googleads/listAccountsWithLibrary">List accounts</a><br>
+    <a href="<?php echo BASE_URL; ?>/dashboard/index">Return to Dashboard</a><br>
 </body>
