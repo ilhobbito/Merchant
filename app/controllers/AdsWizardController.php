@@ -312,7 +312,7 @@ class AdsWizardController{
             }
             // Changes the data sent to the API depending on the objective type
             if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_TRAFFIC'){
-                $imageHash = $this->imageHash();
+                $imageHash = $this->imageHash($_FILES['ad_image']);
                 $objectStorySpec = [
                     'page_id' => $_POST['page_id'],
                     'link_data' => [
@@ -341,19 +341,21 @@ class AdsWizardController{
                     $accessToken
                 );
 
-                $productData = $productResponse->getDecodedBody()['data'][0];
+                // $productData = $productResponse->getDecodedBody()['data'][0];
 
-                if(empty($_POST['description'])){
-                    $_POST['description'] = 'Now only ' . $productData['sale_price'] . ' (was ' . $productData['price'] . ')';
-                }
+                // if(empty($_POST['description'])){
+                //     $_POST['description'] = 'Now only ' . $productData['sale_price'] . ' (was ' . $productData['price'] . ')';
+                // }
 
                 $objectStorySpec = [
                     'page_id' => $_POST['page_id'],
                     'template_data' => [
                         'link' => $_POST['link'] ?? 'https://www.example.com',
                         'message' => $_POST['message'],
-                        'name' => $productData['name'],
-                        'description' => $_POST['description'],
+                        //'name' => $productData['name'],
+                        'name' => '{product.name}',
+                        //'description' => $_POST['description'],
+                        'description' => '{product.description}',
                         'call_to_action' => [
                             'type' => $_POST['call_to_action'],
                             'value' => [
@@ -393,6 +395,7 @@ class AdsWizardController{
 
                 $_SESSION['wizard-creative'] = $postFields;
                 $_SESSION['wizard-creative']['id'] = $decoded['id'] ?? null;
+                $_SESSION['wizard-creative']['image_hash'] = $imageHash;
                 $_SESSION['flash_adset'] = [
                     'title'   => "Ad Creative \"" .$_POST['creative_name'] . "\" was successfully created!",
                     'body'    => "ID: {$decoded['id']}<br>"
@@ -504,6 +507,7 @@ class AdsWizardController{
 
     function resultWizard(){
         $userManager = new User();
+        $fbClient = $this->buildClient();
         $campaign = $_SESSION['wizard-campaign'];
         $adset = $_SESSION['wizard-adset'];
         $creative = $_SESSION['wizard-creative'];
@@ -517,6 +521,25 @@ class AdsWizardController{
         
         if (isset($creative['object_story_spec']) && is_string($creative['object_story_spec'])) {
             $creative['object_story_spec'] = json_decode($creative['object_story_spec'], true); // true = associative array
+        }
+        $productImages = $userManager->getProductSetProducts(
+            $_SESSION['wizard-creative']['product_set_id'],
+            $_SESSION['fb_access_token']
+        );
+        if (isset($_SESSION['wizard-creative']['image_hash'])) {
+            $imageHash = $_SESSION['wizard-creative']['image_hash'];
+            $response = $fbClient->get(
+                "/{$this->data['ads_id']}/adimages",
+                $_SESSION['fb_access_token'],
+                [
+                    'hashes' => [$imageHash],
+                    'fields' => 'url'
+                ]
+            );
+            $imageData = $response->getDecodedBody();
+            $imageUrl = $imageData['data'][0]['url'] ?? null;
+        
+            $_SESSION['wizard-creative']['image_url'] = $imageUrl;
         }
         require_once __DIR__ . '/../views/ads-wizard/end-screen.php';
     }
@@ -534,13 +557,27 @@ class AdsWizardController{
         );
     }
 
-    public function imageHash()
+    public function imageHash($uploadedFile)
     {
+
+        $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+        if (!in_array($uploadedFile['type'], $allowedTypes)) {
+            throw new \Exception("Unsupported image format. Please upload a JPG, PNG, or GIF.");
+        }
+        if (!isset($uploadedFile) || $uploadedFile['error'] !== UPLOAD_ERR_OK) {
+            throw new \Exception("Image upload failed or no image provided.");
+        }
+
+        $tmpPath = $uploadedFile['tmp_name'];
+        $originalName = $uploadedFile['name'];
+        $mimeType = mime_content_type($tmpPath);
+
         $url = "https://graph.facebook.com/v17.0/{$this->data['ads_id']}/adimages";
         $ch = curl_init($url);
 
         $postFields = [
-            'filename' => new \CURLFile(__DIR__ . '/../images/dummy.png', 'image/png', 'dummy.png'),
+            'filename' => new \CURLFile($tmpPath, $mimeType, $originalName),
             'access_token' => $this->data['fb_access_token']
         ];
 
@@ -550,9 +587,12 @@ class AdsWizardController{
         $response = curl_exec($ch);
         curl_close($ch);
 
-        // Decode the response to get the image hash
         $data = json_decode($response, true);
-        $imageHash = $data['images']['dummy.png']['hash'] ?? null;
+        $imageHash = $data['images'][$originalName]['hash'] ?? null;
+
+        if (!$imageHash) {
+            throw new \Exception("Failed to get image hash from Facebook API response.");
+        }
 
         return $imageHash;
     }
