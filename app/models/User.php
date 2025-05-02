@@ -102,7 +102,7 @@ class User{
     }
 
     public function getProductSetById($productSetId, $accessToken){
-        $url = "https://graph.facebook.com/v22.0/{$productSetId}?fields=id,name,products{id,name,retailer_id,price}&access_token={$accessToken}";
+        $url = "https://graph.facebook.com/v22.0/{$productSetId}?fields=id,name,products{id,name,retailer_id,price,image_link}&access_token={$accessToken}";
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
@@ -113,10 +113,26 @@ class User{
             throw new \RuntimeException("Facebook API error: " . $data['error']['message']);
         }
 
-        // return a single product‐set as an associative array
+        // return a single product set as an array
         return $data;
     }
 
+    public function getProductSetProducts($productSetId, $accessToken) {
+        $url = "https://graph.facebook.com/v22.0/{$productSetId}/products?fields=id,name,retailer_id,price,images&access_token={$accessToken}";
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+    
+        $data = json_decode($response, true);
+        if (isset($data['error'])) {
+            throw new \RuntimeException("Facebook API error: " . $data['error']['message']);
+        }
+    
+        return $data['data'];
+    }
+    
     public function getCatalogById($catalogId, $accessToken){
         $url = "https://graph.facebook.com/v22.0/{$catalogId}?fields=id,name&access_token={$accessToken}";
         $ch = curl_init($url);

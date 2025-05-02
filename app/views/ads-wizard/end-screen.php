@@ -3,98 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Campaign Summary</title>
 </head>
 <body>
     <h2>Congratulations, your campaign is finished!</h2>
+
+
     <div style="display: flex;">
-        <div style="border: solid 2px grey; width: 50%; margin: 5px; padding-left:25px;">
+        <div style="border: 2px solid grey; width: 50%; margin: 5px; padding-left: 25px;">
             <h3>Campaign Data:</h3>
-            <?php 
-                echo "<h4>Name:</h4> <p>{$campaign['name']}</p>";
-                echo "<h4>Id:</h4> <p>{$campaign['id']}</p>";
-                echo "<h4>Objective:</h4> <p>{$campaign['objective']}";
-                echo "<h4>Starts:</h4> <p>{$adset['start_time']}";
-                echo "<h4>Ends:</h4> <p>{$adset['end_time']}";
-            ?>
+            <p><strong>Name:</strong> <?= $campaign['name'] ?></p>
+            <p><strong>Id:</strong> <?= $campaign['id'] ?></p>
+            <p><strong>Objective:</strong> <?= $campaign['objective'] ?></p>
+            <p><strong>Starts:</strong> <?= $adset['start_time'] ?></p>
+            <p><strong>Ends:</strong> <?= $adset['end_time'] ?></p>
         </div>
-        <div style="border: solid 2px grey; width: 50%; margin: 5px; padding-left:25px;">
-            <h3>Ad set Data:</h3>
+
+        <div style="border: 2px solid grey; width: 50%; margin: 5px; padding-left: 25px;">
+            <h3>Ad Set Data:</h3>
+            <p><strong>Name:</strong> <?= $adset['name'] ?></p>
+            <p><strong>Id:</strong> <?= $adset['id'] ?></p>
+            <p><strong>Billing Event:</strong> <?= $adset['billing_event'] ?></p>
+            <p><strong>Bid Strategy:</strong> <?= $adset['bid_strategy'] ?></p>
+
             <?php
-                echo "<h4>Name:</h4> <p>{$adset['name']}</p>";
-                echo "<h4>Id:</h4> <p>{$adset['id']}</p>";
-                echo "<h4>Billing Event:</h4> <p>{$adset['billing_event']}</p>";
-                echo "<h4>Bid Strategy:</h4> <p>{$adset['bid_strategy']}</p>";
-                $raw = (int) ($adset['daily_budget']);
-                $display = number_format($raw / 100, 2, '.', ',');
-                echo "<h4>Daily Budget:</h4> <p>{$display} SEK</p>";
-                if(isset($adset['bid_amount'])){
-                    $raw = (int) ($adset['bid_amount']);
-                    $display = number_format($raw / 100, 2, '.', ',');
-                    echo "<h4>Bid amount</h4> <p>{$display} SEK</p>";
-                }
-                echo "<h4>Optimization Goal:</h4> <p>{$adset['optimization_goal']}";
-                echo "<h4>Target Countries:</h4>"; 
-                
-                foreach($adset['targeting']['geo_locations']['countries'] as $country){
-                    echo "<p> {$country} </p>";
+                $budget = number_format($adset['daily_budget'] / 100, 2, '.', ',');
+                echo "<p><strong>Daily Budget:</strong> {$budget} SEK</p>";
+
+                if (isset($adset['bid_amount'])) {
+                    $bid = number_format($adset['bid_amount'] / 100, 2, '.', ',');
+                    echo "<p><strong>Bid Amount:</strong> {$bid} SEK</p>";
                 }
 
-                echo "<h4>Target Platforms:</h4>";
-                foreach($adset['targeting']['publisher_platforms'] as $platform){
-                    echo "<p> {$platform} </p>";
+                echo "<p><strong>Optimization Goal:</strong> {$adset['optimization_goal']}</p>";
+
+                echo "<p><strong>Target Countries:</strong></p>";
+                foreach ($adset['targeting']['geo_locations']['countries'] as $country) {
+                    echo "<p>• {$country}</p>";
+                }
+
+                echo "<p><strong>Target Platforms:</strong></p>";
+                foreach ($adset['targeting']['publisher_platforms'] as $platform) {
+                    echo "<p>• {$platform}</p>";
                 }
             ?>
         </div>
-
     </div>
-    <div style="display: flex;">
-        <div style="border: solid 2px grey; width: 50%; margin: 5px; padding-left:25px;">
-            <h3>Creative Data:</h3>
-            <?php
-                if($campaign['objective'] == "OUTCOME_SALES"){
-                    echo "<h4>Name:</h4> <p>{$creative['name']}";
-                    echo "<h4>Link:</h4> <p>{$creative['object_story_spec']['template_data']['link']}";
-                    echo "<h4>Page Id:</h4> <p>{$creative['object_story_spec']['page_id']}";
 
-                
-                    if(!empty($creative['object_story_spec']['template_data']['message'])){
-                        echo "<h4>Message:</h4> <p>{$creative['object_story_spec']['template_data']['message']}";
-                    }
-                    if(!empty($creative['object_story_spec']['template_data']['description'])){
-                        echo "<h4>Description:</h4> <p>{$creative['object_story_spec']['template_data']['description']}";
-                    }
-                    echo "<h4>Call to Action: </h4> <p>{$creative['object_story_spec']['template_data']['call_to_action']['type']}";
-                }
-                else if($campaign['objective'] == "OUTCOME_TRAFFIC"){
-                    echo "<h4>Name:</h4> <p>{$creative['name']}";
-                    echo "<h4>Link:</h4> <p>{$creative['object_story_spec']['link_data']['link']}";
-                    echo "<h4>Page Id:</h4> <p>{$creative['object_story_spec']['page_id']}";
-                
-                    echo "<h4>Call to Action: </h4> <p>{$creative['object_story_spec']['link_data']['call_to_action']['type']}";
-                }
-                
-                
-            ?>
+    <div style="display: flex; gap: 20px; max-width: 97%;">
+        <div style="border: 2px solid grey; max-width: 50%; margin: 5px; padding-left: 25px;">
+            <div style="display: flex; gap:20vw; justify-conent:center;" >
+                <h3>Creative Data:</h3>
+                <h4>Product Images:</h4>
+            </div>
+            
+            <div style="display: flex;">
+                <div style="padding-right: 20px;">
+                    <?php if ($campaign['objective'] === "OUTCOME_SALES"): ?>
+                        <p><strong>Name:</strong> <?= $creative['name'] ?></p>
+                        <p><strong>Link:</strong> <?= $creative['object_story_spec']['template_data']['link'] ?></p>
+                        <p><strong>Page Id:</strong> <?= $creative['object_story_spec']['page_id'] ?></p>
+                        <?php if (!empty($creative['object_story_spec']['template_data']['message'])): ?>
+                            <p><strong>Message:</strong> <?= $creative['object_story_spec']['template_data']['message'] ?></p>
+                        <?php endif; ?>
+                        <?php if (!empty($creative['object_story_spec']['template_data']['description'])): ?>
+                            <p><strong>Description:</strong> <?= $creative['object_story_spec']['template_data']['description'] ?></p>
+                        <?php endif; ?>
+                        <p><strong>Call to Action:</strong> <?= $creative['object_story_spec']['template_data']['call_to_action']['type'] ?></p>
+                    <?php else: ?>
+                        <p><strong>Name:</strong> <?= $creative['name'] ?></p>
+                        <p><strong>Link:</strong> <?= $creative['object_story_spec']['link_data']['link'] ?></p>
+                        <p><strong>Page Id:</strong> <?= $creative['object_story_spec']['page_id'] ?></p>
+                        <p><strong>Call to Action:</strong> <?= $creative['object_story_spec']['link_data']['call_to_action']['type'] ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width:50%;">
+                <?php if ($campaign['objective'] === 'OUTCOME_SALES' && !empty($productImages)): ?>
+                    
+                    <div style="display: flex; overflow-x: auto; gap: 10px; margin-left: 10vw; padding: 10px; border: 1px solid #ccc; max-width: 100%;">
+                        <?php foreach ($productImages as $product): ?>
+                            <?php
+                                $imageData = $product['images'][0] ?? null;
+                                if (is_string($imageData)) {
+                                    $imageData = json_decode($imageData, true);
+                                }
+                                $imageUrl = $imageData['url'] ?? null;
+                            ?>
+                            <?php if ($imageUrl): ?>
+                                <div style="min-width: 150px; flex: 0 0 auto; text-align: center;">
+                                <img 
+                                    src="<?= htmlspecialchars($imageUrl) ?>" 
+                                    alt="Product Image" 
+                                    style="max-height: 150px; width: auto; object-fit: contain; border: 1px solid #aaa; background: #f8f8f8; padding: 5px;">
+                                    <p style="font-size: 0.9em; margin-top: 5px;"><?= htmlspecialchars($product['name']) ?></p>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php elseif (!empty($creative['image_url'])): ?>
+                        <h4>Uploaded Image:</h4>
+                        <img src="<?= htmlspecialchars($creative['image_url']) ?>" alt="Uploaded ad image" style="max-width: 100%; border: 1px solid #ccc; margin-top: 10px;">
+                    <?php else: ?>
+                        <p>Image preview not available.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-        <?php if(isset($productSet) && isset($catalog)){ ?>
-        <div style="border: solid 2px grey; width: 50%; margin: 5px; padding-left:25px;">       
-            <h3>Product Set:</h3>
-            <?php
-                echo "<h4>Catalog:</h4> <p>{$catalog['name']}</p>";
-                echo "<h4>Id: </h4> <p>{$catalog['id']}</p><hr>";
-                echo "<h4>Product Set:</h4> <p>{$productSet['name']}</p>";
-                echo "<h4>Id:</h4> <p>{$productSet['id']}</p><hr>";
-                echo "<h4>Product details:</h4>";
-                foreach($productSet['products']['data'] as $product){
-                    echo "<p><strong>Name: {$product['name']}</strong></p></br>";
-                    echo "<p><strong>Retailer Id: {$product['retailer_id']}</strong></p></br>";
-                    echo "<p><strong>Price: {$product['price']}</strong></p></br>";
-                }
-            ?>
-        </div>
-        <?php } ?>
+
+        <?php if (isset($productSet) && isset($catalog)): ?>
+            <div style="border: 2px solid grey; width: 50%; margin: 5px; padding-left: 25px; max-height: 55vh; overflow-y: auto;">
+                <h3>Product Set:</h3>
+                <p><strong>Catalog:</strong> <?= $catalog['name'] ?></p>
+                <p><strong>Catalog Id:</strong> <?= $catalog['id'] ?></p>
+                <hr>
+                <p><strong>Product Set:</strong> <?= $productSet['name'] ?></p>
+                <p><strong>Set Id:</strong> <?= $productSet['id'] ?></p>
+                <hr>
+                <h4>Product Details:</h4>
+                <?php foreach ($productSet['products']['data'] as $product): ?>
+                    <p><strong>Name:</strong> <?= $product['name'] ?></p>
+                    <p><strong>Retailer Id:</strong> <?= $product['retailer_id'] ?></p>
+                    <p><strong>Price:</strong> <?= $product['price'] ?></p>
+                    <hr>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
+
     <a href="/Merchant/public/fbdashboard" style="
         display: inline-block;
         padding: 10px 20px;
@@ -103,7 +139,7 @@
         text-decoration: none;
         border-radius: 5px;
         font-weight: bold;
-        margin: 5px;
+        margin: 10px;
     ">Return to Dashboard</a>
 </body>
 </html>

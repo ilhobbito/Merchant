@@ -31,7 +31,7 @@
         echo "<h4>Since you've picked 'Outcome Sales' as your campaign goal you have selected a productset in the previous step. In this case the images and information will be loaded dynamically from the product set</h4>";
     } ?>
 
-    <form method="POST" action="createAdCreativeWizard">
+    <form method="POST" action="createAdCreativeWizard" enctype="multipart/form-data">
         <label for="creative_name">Creative Name: </label>
         <input type="text" name="creative_name" id="creative_name">
         <br><br>
@@ -43,6 +43,16 @@
             <p><strong>Link</strong> is the url to your website, shop or page.</p>
         </div><br><br>
 
+
+        <?php if($_SESSION['wizard-campaign']['objective'] == 'OUTCOME_TRAFFIC'){
+            echo '<label for="ad_image">Upload Image:</label>';
+            echo '<input type="file" name="ad_image" accept="image/*" />';
+            echo '<br><br>';
+            echo '<div class="description-box" style="display: block;">';
+            echo "<p><strong>Image</strong> is where you select what image you wants to shown for your ad. You upload an image file that is either .jpg, .jpeg, .png or .gif formats!</p>";
+            echo '</div>';
+        } ?>
+        <br><br>
         <label for="page_id">Page Id: </label>
         <input type="text" name="page_id" id="page_id">
         <br>
