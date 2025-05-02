@@ -12,6 +12,7 @@ composer.auth.json
 
 client_secret.json
 google_ads_php.ini
+google_ads_php.ini.example
 token.json
 fb_token.json
 /vendor/

@@ -3,14 +3,14 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 session_start();
 
 // Kontrollera om användaren är autentiserad
-if (!isset($_SESSION['google_access_token'])) {
+if (!isset($_SESSION['access_token'])) {
     die("Error: User is not authenticated.");
 }
 
 // Konfigurera Google Client
 $client = new Google_Client();
 $client->setApplicationName('Google-Merchant-API-Test');
-$client->setAccessToken($_SESSION['google_access_token']);
+$client->setAccessToken($_SESSION['access_token']);
 
 // Kontrollera om access token är giltig, uppdatera om nödvändigt
 if ($client->isAccessTokenExpired()) {

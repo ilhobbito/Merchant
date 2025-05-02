@@ -1,6 +1,7 @@
 <?php
 namespace App\Controllers;
 
+
 require_once __DIR__ . '/../../vendor/autoload.php';
 use Google_Client;
 use Google\Ads\GoogleAds\V19\Resources\Customer;
@@ -267,7 +268,7 @@ class GoogleAdsController{
 
 public function deleteCampaign(): array
 {
-    require_once __DIR__ . '/../views/googleads/edit-campaign.php';
+    require_once __DIR__ . '/../views/googleads/delete-campaign.php';
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         return ['success' => false, 'error' => 'Invalid request method'];
     }

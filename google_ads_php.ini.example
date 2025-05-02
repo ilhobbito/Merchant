@@ -1,9 +1,9 @@
 [GOOGLE_ADS]
 developerToken = 
 loginCustomerId = 
-apiVersion = v19
+apiVersion =
 
 [OAUTH2]
-clientId = 
-clientSecret = 
-refreshToken = 
+clientId =
+clientSecret =
+refreshToken=
