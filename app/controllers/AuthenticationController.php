@@ -86,8 +86,14 @@ class AuthenticationController
     $client->setAccessType('offline');
         if (isset($_GET['code'])) {
             $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
-            $_SESSION['google_access_token'] = $token;
+            $_SESSION['access_token'] = $token;
+            $_SESSION['refresh_token'] = $token['refresh_token'];
             file_put_contents('token.json', json_encode($token));
+            $configPath = __DIR__ . '/../../google_ads_php.ini'; 
+            $configData = parse_ini_file($configPath, true);
+
+            $configData['OAUTH2']['refreshToken'] = $token['refresh_token'];
+            $this->writeIniFile($configData, $configPath);
 
             // Redirect to dashboard after successful authentication
             header('Location: /Merchant/public/dashboard');
@@ -97,6 +103,20 @@ class AuthenticationController
             echo "Authorization failed!";
         }
     }
+    private function writeIniFile(array $assoc, string $path): bool
+{
+    $content = '';
+    foreach ($assoc as $section => $values) {
+        $content .= "[$section]\n";
+        foreach ($values as $key => $val) {
+            $escapedVal = is_numeric($val) ? $val : '' . addslashes($val) . '';
+            $content .= "$key = $escapedVal\n";
+        }
+        $content .= "\n";
+    }
+    return file_put_contents($path, $content) !== false;
+}
+
 
     public function facebookCallback()
     {

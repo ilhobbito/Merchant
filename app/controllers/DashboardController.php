@@ -1,7 +1,6 @@
 <?php
 namespace App\Controllers;
 
-session_start();
 require '../vendor/autoload.php';
 
 use Google_Client;
@@ -24,11 +23,11 @@ class DashboardController
         $dotenv->load();
         
         // Check if Google token is set
-        if (isset($_SESSION['google_access_token'])) {
+        if (isset($_SESSION['access_token'])) {
             // Initialize Google client
             $this->client = new Google_Client();
             $this->client->setApplicationName('Google-Merchant-API-Test');
-            $this->client->setAccessToken($_SESSION['google_access_token']);
+            $this->client->setAccessToken($_SESSION['access_token']);
 
             if ($this->client->isAccessTokenExpired()) {
                 echo "Google access token expired. Please re-authenticate.";
@@ -173,7 +172,7 @@ class DashboardController
     
         $client = new Google_Client();
         $client->setApplicationName('Google-Merchant-API-Test');
-        $client->setAccessToken($_SESSION['google_access_token']);
+        $client->setAccessToken($_SESSION['access_token']);
     
         if ($client->isAccessTokenExpired()) {
             die("Error: Access token expired.");
@@ -235,7 +234,7 @@ class DashboardController
     }
    
     public function logout(){
-        unset($_SESSION['google_access_token']);
+        unset($_SESSION['access_token']);
         unset($_SESSION['fb_access_token']);
         session_destroy();
         header('Location: /Merchant/public/');

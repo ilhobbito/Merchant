@@ -4,6 +4,7 @@ loginCustomerId =
 apiVersion = v19
 
 [OAUTH2]
-clientId = 
-clientSecret = 
-refreshToken = 
+clientId =
+clientSecret =
+refreshToken=
+ 
