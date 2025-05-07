@@ -6,11 +6,21 @@
     <title>List Catalogs</title>
 </head>
 <body>
-    <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
-    <h2>Your Catalogs</h2>
-    <?php foreach($catalogs as $catalog){ ?>
-        <option value="<?php echo $catalog['id']?>"><?php echo "Name: " . $catalog['name'] . " Id: " . $catalog['id']?></option>
-    <?php }?>
+
+<a href='/Merchant/public/fbdashboard'>Return</a><br><br>
+<h2>Your Catalogs</h2>
+
+<!-- 
+    Loop through each catalog and display basic info.
+    Output is presented as an unordered list for clarity.
+-->
+<ul>
+    <?php foreach ($catalogs as $catalog): ?>
+        <li>
+            <strong><?= htmlspecialchars($catalog['name']) ?></strong> — ID: <?= $catalog['id'] ?>
+        </li>
+    <?php endforeach; ?>
+</ul>
 
 </body>
 </html>

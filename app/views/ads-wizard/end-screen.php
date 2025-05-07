@@ -58,7 +58,7 @@
             </div>
             
             <div style="display: flex;">
-                <div style="padding-right: 20px;">
+                <div style="padding-right: 20px; width: 25%;">
                     <?php if ($campaign['objective'] === "OUTCOME_SALES"): ?>
                         <p><strong>Name:</strong> <?= $creative['name'] ?></p>
                         <p><strong>Link:</strong> <?= $creative['object_story_spec']['template_data']['link'] ?></p>
@@ -67,7 +67,7 @@
                             <p><strong>Message:</strong> <?= $creative['object_story_spec']['template_data']['message'] ?></p>
                         <?php endif; ?>
                         <?php if (!empty($creative['object_story_spec']['template_data']['description'])): ?>
-                            <p><strong>Description:</strong> <?= $creative['object_story_spec']['template_data']['description'] ?></p>
+                            <p><strong>Example Description:</strong> <?= htmlspecialchars($previewDescription) ?></p>
                         <?php endif; ?>
                         <p><strong>Call to Action:</strong> <?= $creative['object_story_spec']['template_data']['call_to_action']['type'] ?></p>
                     <?php else: ?>
@@ -101,9 +101,9 @@
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
-                    <?php elseif (!empty($creative['image_url'])): ?>
+                    <?php elseif (!empty($imageUrl)): ?>
                         <h4>Uploaded Image:</h4>
-                        <img src="<?= htmlspecialchars($creative['image_url']) ?>" alt="Uploaded ad image" style="max-width: 100%; border: 1px solid #ccc; margin-top: 10px;">
+                        <img src="<?= htmlspecialchars($imageUrl) ?>" alt="Uploaded ad image" style="max-width: 100%; border: 1px solid #ccc; margin-top: 10px;">
                     <?php else: ?>
                         <p>Image preview not available.</p>
                     <?php endif; ?>

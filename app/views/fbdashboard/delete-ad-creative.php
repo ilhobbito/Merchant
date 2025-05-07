@@ -6,19 +6,34 @@
     <title>Delete Ad Creative</title>
 </head>
 <body>
+
 <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
-    <form method="POST" action="deleteAdCreative">
-        <?php foreach ($adCreatives['data'] as $creative): ?>
-            <?php
-                $id = $creative['id'];
-                $name = $creative['name'] ?? 'No Name';
-            ?>
-            <div>
-                <input type="checkbox" name="selected_creatives[]" value="<?php echo $id; ?>">
-                <label><?php echo htmlspecialchars($name); ?> (ID: <?php echo $id; ?>)</label>
-            </div>
-        <?php endforeach; ?><br>
-        <button type="submit">Delete Selected</button>
-    </form>
+
+<!-- 
+    Form for deleting one or more Facebook Ad Creatives.
+    POSTs to deleteAdCreative() in fbDashboardController.
+    Permanently deletes ad creatives from the Facebook Ads account and is the only way to do so.
+-->
+<form method="POST" action="deleteAdCreative">
+
+    <!-- List all ad creatives as checkboxes for multi-selection -->
+    <?php foreach ($adCreatives['data'] as $creative): ?>
+        <?php
+            $id = $creative['id'];
+            $name = $creative['name'] ?? 'No Name';
+        ?>
+        <div>
+            <!-- Each checkbox represents a creative that can be selected for deletion -->
+            <input type="checkbox" name="selected_creatives[]" value="<?= $id ?>">
+            <label><?= htmlspecialchars($name) ?> (ID: <?= $id ?>)</label>
+        </div>
+    <?php endforeach; ?>
+
+    <br>
+
+    <!-- Submit to delete selected creatives -->
+    <button type="submit">Delete Selected</button>
+</form>
+
 </body>
 </html>

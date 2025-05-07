@@ -8,6 +8,7 @@
 <body>
     <a href='/Merchant/public/fbdashboard'>Return</a><br><br>
     <h2>All products</h2>
+    <!-- For each catalog, fetch and display associated products with basic information -->
     <?php foreach($catalogs as $catalog){
         echo "<h3>Products in " . $catalog['name'] . "</h3>";
         try {
