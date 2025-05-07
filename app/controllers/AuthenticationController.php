@@ -83,6 +83,7 @@ class AuthenticationController
             'https://www.googleapis.com/auth/content',
             'https://www.googleapis.com/auth/adwords'
         ]);
+        // Set the access type to offline to get a refresh token
     $client->setAccessType('offline');
         if (isset($_GET['code'])) {
             $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
@@ -103,6 +104,8 @@ class AuthenticationController
             echo "Authorization failed!";
         }
     }
+    // Function to write the INI file
+    // This function takes an associative array and a file path as input, and writes the array to the specified INI file.
     private function writeIniFile(array $assoc, string $path): bool
 {
     $content = '';

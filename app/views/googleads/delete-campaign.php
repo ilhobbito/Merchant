@@ -13,9 +13,10 @@ try {
     exit;
 }
 
+// Load the listCampaign function to get the campaigns at the top of the page to have them available for deletion
 $campaigns = [];
 try {
-    $campaignData = $controller->listCampaign();
+    $campaignData = $controller->listCampaign(true);
     if (isset($campaignData['error'])) {
         echo "<p class='error'>Error fetching campaigns: " . htmlspecialchars($campaignData['error']) . "</p>";
     } elseif (is_array($campaignData)) {
@@ -73,6 +74,5 @@ if (isset($_POST['action']) && $_POST['action'] === 'delete' && !empty($campaign
         <input type="submit" value="Delete Campaign">
     </form>
 
-    <a href="/Merchant/public/googleads">Return</a>
 </body>
 </html>

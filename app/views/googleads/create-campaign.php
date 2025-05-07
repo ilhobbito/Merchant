@@ -39,6 +39,7 @@ try {
         <input type="number" id="budget_usd" name="budget_usd" min="1" step="0.01" required>
         <input type="submit" value="Create Campaign">
     </form>
+    
 
     <a href="/Merchant/public/googleads">Return</a>
 </body>

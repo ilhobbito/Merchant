@@ -19,7 +19,6 @@ class GoogleAdsController{
     public function __construct(){
         $dotenv = Dotenv::createImmutable(__DIR__ . "/../../");
         $dotenv->load();
-        // Not sure if necessary, will try to remove to check at a later point
         $this->client = new Google_Client();
         $this->client->setAuthConfig('../client_secret.json');
     }
@@ -29,7 +28,6 @@ class GoogleAdsController{
     } 
 
     public function listCampaign(){
-
         
         $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
         $storedToken = json_decode(file_get_contents('token.json'), true);
@@ -65,7 +63,7 @@ class GoogleAdsController{
         $customer_id = $_ENV['CUSTOMER_ID']; // Replace with client id that has been made through the api
         // Uses api to search for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
-
+        // Uses the searchStream endpoint to get a list of campaigns
         $headers = [
             "Authorization: Bearer " . $access_token,
             "developer-token: " . $developer_token,
@@ -105,28 +103,30 @@ class GoogleAdsController{
             echo "Error: No refresh token!";
             return;
         }
-
+        // Refresh the access token using the refresh token
+        // This is a workaround to read the refresh token from the token.json file
         $tokenData = $this->client->fetchAccessTokenWithRefreshToken($storedToken['refresh_token']);
         $accessToken = $tokenData['access_token'] ?? null;
         if (!$accessToken) {
             echo "Error: No access token!";
             return;
         }
-
+        // Parse the google_ads_php.ini file to get the developer token
+        // This is a workaround to read the developer token from the ini file
         $storedIni = parse_ini_file('../google_ads_php.ini', true);
         $developerToken = $storedIni['GOOGLE_ADS']['developerToken'] ?? null;
         if (!$developerToken) {
             echo "Error: No developer token!";
             return;
         }
-
+        // Set up headers for the API request
         $headers = [
             "Authorization: Bearer $accessToken",
             "developer-token: $developerToken",
             "Content-Type: application/json",
             "login-customer-id: $managerCustomerId"
         ];
-
+        // Get campaign name and budget from the form
         $campaignName = $_POST['campaign_name'] ?? null;
         $budgetUsd = floatval($_POST['budget_usd'] ?? 0);
         if (!$campaignName || $budgetUsd <= 0) {
@@ -137,7 +137,7 @@ class GoogleAdsController{
         $budgetMicros = intval($budgetUsd * 1000000);
         $mutateUrl = "https://googleads.googleapis.com/v19/customers/{$customerId}/googleAds:mutate";
 
-        // Budget request
+        // Set up the budget request
         $budgetPayload = json_encode([
             "mutateOperations" => [[
                 "campaignBudgetOperation" => ["create" => [
@@ -148,7 +148,7 @@ class GoogleAdsController{
                 ]]
             ]]
         ]);
-
+        // Create the budget 
         $ch = curl_init($mutateUrl);
         curl_setopt_array($ch, [
             CURLOPT_HTTPHEADER => $headers,
@@ -159,6 +159,7 @@ class GoogleAdsController{
         $budgetResponse = curl_exec($ch);
         curl_close($ch);
 
+        // 
         $budgetData = json_decode($budgetResponse, true);
         $campaignBudget = $budgetData['mutateOperationResponses'][0]['campaignBudgetResult']['resourceName'] ?? null;
 
@@ -169,7 +170,7 @@ class GoogleAdsController{
 
         echo "Budget created: $campaignBudget<br>";
 
-        // Campaign request
+        // Set up the campaign request
         $campaignPayload = json_encode([
             "mutateOperations" => [[
                 "campaignOperation" => ["create" => [
@@ -194,7 +195,6 @@ class GoogleAdsController{
         $campaignResponse = curl_exec($ch);
         curl_close($ch);
 
-        echo "Campaign response: <pre>" . htmlspecialchars($campaignResponse) . "</pre>";
     }
 
     public function editCampaign(): array
@@ -211,7 +211,8 @@ class GoogleAdsController{
     if (!$accessToken) {
         return ['success' => false, 'error' => 'No access token'];
     }
-
+    // Parse the google_ads_php.ini file to get the developer token
+    // This is a workaround to read the developer token from the ini file
     $developerToken = parse_ini_file('../google_ads_php.ini', true)['GOOGLE_ADS']['developerToken'] ?? null;
     if (!$developerToken) {
         return ['success' => false, 'error' => 'No developer token'];
@@ -229,7 +230,7 @@ class GoogleAdsController{
     if (!$campaignId || !$newName) {
         return ['success' => false, 'error' => 'Campaign ID and name are required'];
     }
-
+    // Update name of the campaign
     $payload = json_encode([
         "mutateOperations" => [[
             "campaignOperation" => [
@@ -297,7 +298,7 @@ public function deleteCampaign(): array
     if (!$campaignId) {
         return ['success' => false, 'error' => 'Campaign ID is required'];
     }
-
+    // Delete the campaign
     $payload = json_encode([
         "mutateOperations" => [[
             "campaignOperation" => [
@@ -381,8 +382,6 @@ public function deleteCampaign(): array
 
         function listAccountsWithLibrary()
     {
-        // Had a ton of trouble to read OAuth2 Credentials from the google_ads_php.ini file so 
-        // had to build them individually and then merge them to be able to read it correctly.
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
     
         // Build OAuth2 credentials from the OAUTH2 section
