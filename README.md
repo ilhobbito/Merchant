@@ -16,6 +16,7 @@ This is a school project web application written in PHP, HTML and some basic Jav
 3. Install dependencies using Composer:
     ```bash
     composer install
+    pip install google-ads
     ```
 
 4. Start a local server:

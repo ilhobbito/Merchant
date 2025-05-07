@@ -45,8 +45,8 @@ class User {
         try {
             // Make a Graph API request to fetch the user's ad accounts
             $response = $fbClient->get('/me/adaccounts?fields=name,account_id', $_SESSION['fb_access_token']);
-            $adAccountsData = $response->getDecodedBody();
-
+            $adAccountsData = $response->getDecodedBody(); 
+            
             // Check if ad accounts are returned
             if (isset($adAccountsData['data']) && !empty($adAccountsData['data'])) {
                 // Selects the first ad account
