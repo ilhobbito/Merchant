@@ -12,7 +12,7 @@ class GoogleAuth
     {
         $this->client = new Google_Client();
         $this->client->setAuthConfig('client_secret.json');
-
+        // Checks functions if the token.json file exists. Updates the access token if it is expired and file if it does exist.
         if (file_exists('token.json')) {
             $token = json_decode(file_get_contents('token.json'), true);
             $this->client->setAccessToken($token);

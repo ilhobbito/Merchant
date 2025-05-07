@@ -171,6 +171,7 @@ class GoogleAdsController{
         echo "Budget created: $campaignBudget<br>";
 
         // Set up the campaign request
+        // mutateOperations is used to create the campaign 
         $campaignPayload = json_encode([
             "mutateOperations" => [[
                 "campaignOperation" => ["create" => [
@@ -184,7 +185,8 @@ class GoogleAdsController{
                 ]]
             ]]
         ]);
-
+        // Create the campaign using the budget created above and campaign name from the form
+        // cUrl_init is used to make the API call 
         $ch = curl_init($mutateUrl);
         curl_setopt_array($ch, [
             CURLOPT_HTTPHEADER => $headers,
@@ -254,6 +256,9 @@ class GoogleAdsController{
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    // Check for errors in the API response 
+    // If the response code is not 200, it means there was an error
+    // The error message is extracted from the response and returned
     if ($httpCode !== 200) {
         $error = json_decode($response, true)['error'] ?? ['message' => 'Unknown error'];
         return ['success' => false, 'error' => "API error: " . ($error['message'] ?? 'No error message')];
@@ -338,8 +343,8 @@ public function deleteCampaign(): array
         require_once '../app/views/googleads/create-test-client.php';
         } else {
         
-
-        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
+        // Replace with manager id that has developer token, you find the developer token in your manager account
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; 
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
         
         // Build OAuth2 credentials from the OAUTH2 section
@@ -364,7 +369,6 @@ public function deleteCampaign(): array
             'time_zone' => 'America/New_York'
         ]);
 
-        // Build the CreateCustomerClientRequest using camelCase keys.
         $request = new CreateCustomerClientRequest([
             'customer_id' => $managerCustomerId,
             'customer_client' => $customerClient,
@@ -380,7 +384,7 @@ public function deleteCampaign(): array
 }
 
 
-        function listAccountsWithLibrary()
+    function listAccountsWithLibrary()
     {
         $configPath = __DIR__ . '/../../google_ads_php.ini'; 
     
@@ -439,8 +443,8 @@ public function deleteCampaign(): array
             return;
         }
     
-        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; // Replace with manager id that has developer token
-        $customer_id = $_ENV['CUSTOMER_ID']; // Replace with client id that has been made through the api
+        $managerCustomerId = $_ENV['MANAGER_CUSTOMER_ID']; 
+        $customer_id = $_ENV['CUSTOMER_ID'];
         
         // uses searchStream to check for the specific user
         $url = "https://googleads.googleapis.com/v19/customers/{$customer_id}/googleAds:searchStream";
@@ -449,7 +453,7 @@ public function deleteCampaign(): array
             "Authorization: Bearer " . $access_token,
             "developer-token: " . $developer_token,
             "Content-Type: application/json",
-            "login-customer-id: " . $managerCustomerId, // Is the comma needed? Probably not. TODO: Test to remove it
+            "login-customer-id: " . $managerCustomerId,
         ];
         
         // GAQL query: get basic customer info

@@ -61,8 +61,8 @@ class DashboardController
         // Initialize the Content API service
         $service = new Google_Service_ShoppingContent($client);
 
-        // Set your Merchant ID (for example, '1234')
-        $merchantId = $_ENV['MERCHANT_ID']; // Replace with your Merchant ID
+        // Set your Merchant ID (for example, '1234' or have it in the .env file)
+        $merchantId = $_ENV['MERCHANT_ID'];
 
         try {
             // Retrieve the list of products
@@ -252,7 +252,7 @@ class DashboardController
     public function listProducts(){
         
         $service = new Google_Service_ShoppingContent($this->client);
-        $merchantId = $_ENV['MERCHANT_ID']; // Replace with merchandId
+        $merchantId = $_ENV['MERCHANT_ID']; 
 
         try {
             // List products for the specified Merchant Center account

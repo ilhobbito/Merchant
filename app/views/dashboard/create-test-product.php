@@ -9,7 +9,7 @@
     <title>Add test product</title>
 </head>
 <body>
-     <!-- How to create a test product: -->
+     <!-- Create a test product using thos form: -->
 <form action="/Merchant/public/dashboard/createTestProduct" method="post">
     <label for="offerId">Offer id</label><br>
     <input type="text" id="offerId" name="offerId" required><br>
@@ -19,7 +19,7 @@
 
     <label for="description">Description:</label><br>
     <textarea id="description" name="description" required></textarea><br>
-
+     <!-- The value with example.com is just a placeholder, you can change it to any link you want. Also the currency and is just a placeholder <br> -->
     <label for="link">Product Link:</label><br>
     <input type="url" id="link" name="link" value="https://example.com" required><br>
 
