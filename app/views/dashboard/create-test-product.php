@@ -37,14 +37,6 @@
     <label for="availability">Availability:</label><br>
     <input type="text" id="availability" name="availability" value="In stock" required><br>
     </select><br>
-
-    <label for="condition">Condition:</label><br>
-    <select id="condition" name="condition">
-        <option value="new" selected>New</option>
-        <option value="used">Used</option>
-        <option value="refurbished">Refurbished</option>
-    </select><br>
-
     <button type="submit">Create Test Product</button>
 </form>
     <a href='/Merchant/public/dashboard'><br>Return</a></body>

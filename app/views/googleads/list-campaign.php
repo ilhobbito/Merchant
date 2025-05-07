@@ -38,6 +38,6 @@
         echo "<pre>" . htmlspecialchars($response) . "</pre>";
     }
     ?>
-    <a href="/Merchant/public/googleads">Return</a>
 </body>
+<a href="/Merchant/public/googleads">Return</a>
 </html>

@@ -13,9 +13,10 @@ try {
     exit;
 }
 
+// Load the listCampaign function to get the campaigns at the top of the page to have them available for editing
 $campaigns = [];
 try {
-    $campaignData = $controller->listCampaign();
+    $campaignData = $controller->listCampaign(true);
     if (isset($campaignData['error'])) {
         echo "<p class='error'>Error fetching campaigns: " . htmlspecialchars($campaignData['error']) . "</p>";
     } elseif (is_array($campaignData)) {
@@ -53,7 +54,7 @@ $campaignId = $_GET['campaign_id'] ?? '';
         <p>Enter the Campaign ID to edit.</p>
 
     <h2>Edit an Existing Campaign</h2>
-    <form method="post" action="">
+    <form method="post" action="editCampaign">
         <input type="hidden" name="action" value="edit">
         <label for="campaign_id">Campaign ID:</label>
         <input type="text" id="campaign_id" name="campaign_id" value="<?php echo htmlspecialchars($campaignId); ?>" required>
@@ -61,6 +62,5 @@ $campaignId = $_GET['campaign_id'] ?? '';
         <input type="text" id="campaign_name" name="campaign_name" value="" required>
         <input type="submit" value="Edit Campaign">
     </form>
-    <a href="/Merchant/public/googleads">Return</a>
 </body>
 </html>

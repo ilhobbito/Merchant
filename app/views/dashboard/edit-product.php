@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../../../vendor/autoload.php';
-session_start();
 
 // Kontrollera om användaren är autentiserad
 if (!isset($_SESSION['access_token'])) {

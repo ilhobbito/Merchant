@@ -48,11 +48,11 @@ class DashboardController
 
     }
     public function getGoogleProducts(){
+        // Initialize the Google Client
         // Enable error reporting for debugging
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
-
-        // Initialize the Google Client
+        
         $client = new Google_Client();
         $client->setApplicationName("My Merchant App");
         $client->setAuthConfig('D:\xampp\htdocs\Merchant\public\token.json');  // Replace with your credentials file path
@@ -62,7 +62,7 @@ class DashboardController
         $service = new Google_Service_ShoppingContent($client);
 
         // Set your Merchant ID (for example, '1234')
-        $merchantId = '5551596487';
+        $merchantId = $_ENV['MERCHANT_ID']; // Replace with your Merchant ID
 
         try {
             // Retrieve the list of products
@@ -105,24 +105,23 @@ class DashboardController
             $product = new Google_Service_ShoppingContent_Product();
             $product->setOfferId($_POST['offerId']);
             $price = new Google_Service_ShoppingContent_Price();
-    
+            // Validate the price and currency inputs
             if (!isset($_POST['price']) || !isset($_POST['currency'])) {
                 die("Error: Price and currency are required.");
             }
+            // Validate that price is a positive number
             if (!is_numeric($_POST['price']) || $_POST['price'] <= 0) {
                 die("Error: Price must be a positive numeric value.");
             }
-    
+            // Set the price and currency and other product details
             $price->setValue(floatval($_POST['price']));
             $price->setCurrency($_POST['currency']);
             $product->setPrice($price);
-    
             $product->setTitle($_POST['title']);
             $product->setDescription($_POST['description']);
             $product->setLink($_POST['link']);
             $product->setImageLink($_POST['imageLink']);
             $product->setAvailability($_POST['availability']);
-            $product->setCondition($_POST['condition']);
             $product->setContentLanguage("en");
             $product->setTargetCountry("US");
             $product->setChannel("online");
@@ -139,7 +138,7 @@ class DashboardController
                     $_SESSION['products'] = [];
                 }
     
-                // Använd data från $product och $insertedProduct istället för att hämta med get
+                // Use the inserted product's ID and offerId to store in the session
                 $_SESSION['products'][] = [
                     'id' => $insertedProduct->getId(),
                     'offerId' => $insertedProduct->getOfferId(),
@@ -187,10 +186,11 @@ class DashboardController
         }
     
         try {
-            // Hämta befintlig produkt från Google Merchant Center
+            // Get the existing product details using the product ID from Merchant Center
+            // The product ID is a composite identifier (e.g., "online:en:US:offerId")
             $existingProduct = $service->products->get($merchantId, $productId);
     
-            // Skapa ett nytt produkt-objekt
+            // Create a new product object with the updated details
             $product = new Google_Service_ShoppingContent_Product();
             $product->setTitle($_POST['title'] ?? $existingProduct->getTitle());
             $product->setDescription($_POST['description'] ?? $existingProduct->getDescription());
@@ -206,7 +206,7 @@ class DashboardController
             $price->setCurrency($_POST['currency'] ?? $existingProduct->getPrice()->getCurrency());
             $product->setPrice($price);
     
-            // Uppdatera produkten i Merchant Center
+            // Update the product in Merchant Center
             $updatedProduct = $service->products->update($merchantId, $productId, $product);
     
             echo "Product updated successfully!<br>";

@@ -17,7 +17,7 @@ if (!isset($_SESSION['access_token'])) {
     <a href="<?php echo BASE_URL; ?>/googleads/createCampaign">Create Campaign</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/editCampaign">Edit Campaign</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/deleteCampaign">Delete Campaign</a><br>
-    <a href="<?php echo BASE_URL; ?>/googleads/listCampaign">List Campaigns</a><br>
+    <a href="<?php echo BASE_URL; ?>/googleads/listCampaign/false">List Campaigns</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/setTestBudget">Set Test Budget</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/listAccountsWithLibrary">List accounts</a><br>
     <a href="<?php echo BASE_URL; ?>/dashboard/index">Return to Dashboard</a><br>
