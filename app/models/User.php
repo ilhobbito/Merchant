@@ -46,12 +46,12 @@ class User {
             // Make a Graph API request to fetch the user's ad accounts
             $response = $fbClient->get('/me/adaccounts?fields=name,account_id', $_SESSION['fb_access_token']);
             $adAccountsData = $response->getDecodedBody();
-
+           
             // Check if ad accounts are returned
             if (isset($adAccountsData['data']) && !empty($adAccountsData['data'])) {
                 // Selects the first ad account
                 // TODO: Enhance by letting the user select from multiple accounts if available
-                return $adAccountsData['data'][0]['account_id'];
+                return $adAccountsData['data'][1]['account_id'];
             } else {
                 echo "No ad accounts found for this user.";
             }

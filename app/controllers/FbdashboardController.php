@@ -53,7 +53,7 @@ class FbdashboardController{
     }
 
     public function index(){
-        require_once __DIR__ . '/../views/fbdashboard/index.php';
+        require_once __DIR__ . '../../views/fbdashboard/index.php';
     }
 
     // Builds and returns a Facebook SDK client using app credentials from $this->data.

@@ -638,10 +638,14 @@ class AdsWizardController {
     {
         // Allowed MIME types for Facebook ad images
         $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if ($uploadedFile['name'] == '') {
+           return null;
+        }
 
         // Validate file type
         if (!in_array($uploadedFile['type'], $allowedTypes)) {
             throw new \Exception("Unsupported image format. Please upload a JPG, PNG, or GIF.");
+
         }
 
         // Validate file upload status

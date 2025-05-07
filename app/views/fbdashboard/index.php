@@ -1,6 +1,6 @@
 <?php
 // Load config and ensure the user has an authenticated Facebook session
-require_once 'D:\xampp\htdocs\Merchant\public\config.php';
+require_once 'C:\xampp\htdocs\Merchant\public\config.php';
 if (!isset($_SESSION['fb_access_token'])) {
     header('Location: /');
     exit();
