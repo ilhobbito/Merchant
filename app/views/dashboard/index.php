@@ -10,6 +10,7 @@
 <body>
     <h2>Welcome to the Google Merchant Dashboard</h2>
     <a href="<?php echo BASE_URL; ?>/dashboard/createTestProduct">Add product</a><br>
+    <a href="<?php echo BASE_URL; ?>/dashboard/deleteTestProduct">Delete product</a><br>
     <a href="<?php echo BASE_URL; ?>/dashboard/editTestProduct">Edit product</a><br>
     <a href="<?php echo BASE_URL; ?>/dashboard/listProducts">List Products</a><br>
     <a href="<?php echo BASE_URL; ?>/googleads/index">Go to Google Ads</a><br>

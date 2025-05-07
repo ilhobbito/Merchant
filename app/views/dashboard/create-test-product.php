@@ -9,7 +9,7 @@
     <title>Add test product</title>
 </head>
 <body>
-
+     <!-- How to create a test product: -->
 <form action="/Merchant/public/dashboard/createTestProduct" method="post">
     <label for="offerId">Offer id</label><br>
     <input type="text" id="offerId" name="offerId" required><br>

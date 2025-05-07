@@ -13,7 +13,7 @@ $client->setAccessToken($_SESSION['access_token']);
 
 // Check if access token is valid, refresh if necessary
 if ($client->isAccessTokenExpired()) {
-    // Handle refresh token if you are using refresh tokens
+    // Handle token refresh if you are using refresh tokens
     die("Error: Access token expired.");
 }
 
@@ -54,16 +54,15 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Test Product</title>
+    <title>Delete Test Product</title>
 </head>
 <body>
-    <h2>Edit Test Product</h2>
-    <form action="/Merchant/public/dashboard/editTestProduct" method="POST">
-        <label for="productId">Select Product:</label><br>
-        <select name="productId" id="productId" required onchange="updateFormFields(this)">
+<form action="/Merchant/public/dashboard/deleteTestProduct" method="POST">
+        <label for="productId">Välj produkt att ta bort:</label><br>
+        <select name="productId" id="productId" required>
             <?php
             if (empty($products)) {
-                echo '<option value="">No products available</option>';
+                echo '<option value="">Inga produkter tillgängliga</option>';
             } else {
                 foreach ($products as $product) {
                     $selected = (isset($_POST['productId']) && $_POST['productId'] === $product['id']) ? 'selected' : '';
@@ -73,49 +72,30 @@ try {
             ?>
         </select><br><br>
 
-        <label for="title">Product Title:</label><br>
-        <input type="text" name="title" id="title" value="" required><br><br>
-
-        <label for="description">Product Description:</label><br>
-        <textarea name="description" id="description"></textarea><br><br>
-
-        <label for="price">Product Price:</label><br>
-        <input type="number" step="0.01" name="price" id="price" value="" required><br><br>
-
-        <label for="currency">Currency:</label><br>
-        <input type="text" name="currency" id="currency" value="" required><br><br>
-
-        <button type="submit">Submit</button>
+        <button type="submit">Delete</button>
     </form>
     <a href="/Merchant/public/dashboard"><br>Return to Dashboard</a>
 
     <script>
         // Make products available in JavaScript
         const products = <?php echo json_encode($products); ?>;
-
-        function updateFormFields(select) {
-            const selectedId = select.value;
-            let product = {};
-            // Find the selected product by ID
-            products.forEach(p => {
-                if (p.id === selectedId) {
-                    product = p;
-                }
-            });
-
-            // Fill the form fields with the selected product's data
-            document.getElementById('title').value = product.title || '';
-            document.getElementById('description').value = product.description || '';
-            document.getElementById('price').value = product.price ? product.price.value : '';
-            document.getElementById('currency').value = product.price ? product.price.currency : '';
-        }
-        // Event listener for the select element
-        window.onload = function() {
-            const select = document.getElementById('productId');
-            if (select.value) {
-                updateFormFields(select);
-            }
-        };
+// Function to find products to display in the dropdown by id
+function displayProductInfo(select) {
+    const selectedId = select.value;
+    const product = products.find(p => p.id === selectedId) || {};
+    const productInfoDiv = document.getElementById('productInfo');
+    
+    productInfoDiv.innerHTML = product.id ? `
+        <strong>Vald produkt:</strong><br>
+        Titel: ${product.title || 'Ingen titel'}<br>
+        Pris: ${product.price ? product.price.value + ' ' + product.price.currency : 'Inget pris'}
+    ` : '';
+}
+// Event listener for the select element
+window.onload = () => {
+    const select = document.getElementById('productId');
+    if (select.value) displayProductInfo(select);
+};
     </script>
 </body>
 </html>

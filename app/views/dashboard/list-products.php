@@ -8,6 +8,7 @@
 </head>
 <body>
 <?php
+// List all products
 if (!empty($products)) {
                 foreach ($products as $product) {
 

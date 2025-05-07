@@ -52,7 +52,7 @@ class DashboardController
         // Enable error reporting for debugging
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
-        
+
         $client = new Google_Client();
         $client->setApplicationName("My Merchant App");
         $client->setAuthConfig('D:\xampp\htdocs\Merchant\public\token.json');  // Replace with your credentials file path
@@ -214,6 +214,38 @@ class DashboardController
             echo "<br><br>Changes might take some time to reflect. Please refresh the feed.";
         } catch (\Exception $e) {
             echo "An error occurred while updating the product: " . $e->getMessage();
+        }
+    }
+
+    public function deleteTestProduct() {
+        require_once '../app/views/dashboard/delete-test-product.php';
+    
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
+        }
+    
+        $client = new Google_Client();
+        $client->setApplicationName('Google-Merchant-API-Test');
+        $client->setAccessToken($_SESSION['access_token']);
+    
+        if ($client->isAccessTokenExpired()) {
+            die("Error: Access token expired.");
+        }
+    
+        $service = new Google_Service_ShoppingContent($client);
+        $merchantId = $_ENV['MERCHANT_ID'];
+    
+        $productId = $_POST['productId'] ?? null;
+        if (!$productId) {
+            die("Error: Product ID is required.");
+        }
+    
+        try {
+            // Delete the product using the product ID from Merchant Center
+            $service->products->delete($merchantId, $productId);
+            echo "Product deleted successfully!";
+        } catch (\Exception $e) {
+            echo "An error occurred while deleting the product: " . $e->getMessage();
         }
     }
     
