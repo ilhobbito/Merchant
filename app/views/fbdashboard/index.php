@@ -48,6 +48,6 @@ if (!isset($_SESSION['fb_access_token'])) {
 <a href="<?php echo BASE_URL; ?>/fbdashboard/deleteAdCreative">Delete Ad Creative</a><br>
 
 <h4>________________________________________________________</h4>
-
+<a href="<?php echo BASE_URL; ?>/fbdashboard/logout">Logout</a>
 </body>
 </html>

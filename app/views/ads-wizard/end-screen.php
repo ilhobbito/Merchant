@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h2>🎉 Congratulations, your campaign is complete!</h2>
+    <h2>Congratulations, your campaign is complete!</h2>
 
     <!-- Campaign & Ad Set Summary -->
     <div style="display: flex;">

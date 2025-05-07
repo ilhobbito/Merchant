@@ -58,4 +58,8 @@
     <p>If 'Retailer ID' is selected, enter a valid retailer ID (string match).</p>
     <p>If 'Availability' is selected, type <code>in stock</code> (case-sensitive).</p>
 
-    <input type="text" name="filter_object" id="filter_
+    <input type="text" name="filter_object" id="filter_">
+    <br><br>
+    
+    <button type=submit>Create Product Set</button>
+</form>

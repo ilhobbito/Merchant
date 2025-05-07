@@ -28,5 +28,8 @@
     <select name="objective" id="objective">
         <option value="OUTCOME_TRAFFIC">Traffic</option>
         <option value="OUTCOME_SALES">Sales</option>
-
-        <!--
+    </select>
+    <br><br>
+    
+    <button type="submit">Create Campaign</button>
+</form>

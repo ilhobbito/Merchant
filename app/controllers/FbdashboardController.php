@@ -994,4 +994,12 @@ class FbdashboardController{
             echo "<br><br><a href='/Merchant/public/fbdashboard'>Return</a>";
         }
     }
+
+    // Function to unsed all access tokens and then redirect the user to the log in screen
+    public function logout(){
+        unset($_SESSION['access_token']);
+        unset($_SESSION['fb_access_token']);
+        session_destroy();
+        header('Location: /Merchant/public/');
+    }
 }

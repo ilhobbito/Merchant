@@ -8,7 +8,7 @@ This is a school project web application written in PHP, HTML and some basic Jav
 
 2. Configure environment variables:
     - Copy `.env.example` → `.env`
-    - Set `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, and `PIXEL_ID`
+    - Set `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, and `PIXEL_ID`, If you successfully authenticated through Facebook you can use the getPixel method to retrieve a pixel Id if one is connected to your facebook account.
     - Copy `google_ads_php.ini.example` → `google_ads_php.ini`
     - Set `DeveloperToken` from Google Ads, `LoginCustomerId` from a managerAccount in Google Ads, and `ApiVersion` (We used `v19?` in our project)
     - Set `ClientId` from Google Cloud Console, `ClientSecret` from Google Cloud Console, and `RefreshToken` (However it should update automatically once you authenticate yourself with Google OAuth) 
@@ -33,3 +33,7 @@ This is a school project web application written in PHP, HTML and some basic Jav
     ```
     https://127.0.0.1/Merchant/public
     ```
+
+## Notes
+- Delete Ad Creatives require that the ad it is connected to is not running
+ 

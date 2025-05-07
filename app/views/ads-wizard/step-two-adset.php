@@ -57,7 +57,7 @@
                     <option value='' selected>None</option>
                 </select>
             <?php else: ?>
-                <h4>Optionally choose a product set to promote specific products. Leave as "None" to skip.</h4>
+            <h4>Optionally choose a product set to promote specific products. Leave as "None" to skip.</h4>
                 <div style="display:flex; gap:30px;">
                     <div>
                         <label for="catalog_id">Catalog: </label>
@@ -79,30 +79,33 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
             <?php endif; ?>
-
+                                
             <!-- Product Set Dropdown and Button -->
-            <div id="product-select-box">
-                <h4>Choose an existing product set or create a new one.</h4>
-                <div style="display: flex; gap: 20px;">
-                    <div>
-                        <label for="product_set">Product Set: </label>
-                        <select name="product_set" id="product_set" data-selected="<?= htmlspecialchars($_POST['product_set'] ?? '') ?>">
-                            <option value="">Please select a catalog first</option>
-                        </select>
-                        <br><br>
+            <div style="display: flex;">
+                <div id="product-select-box">
+                    <h4>Choose an existing product set or create a new one.</h4>
+                    <div style="display: flex; gap: 20px;">
+                        <div>
+                            <label for="product_set">Product Set: </label>
+                            <select name="product_set" id="product_set" data-selected="<?= htmlspecialchars($_POST['product_set'] ?? '') ?>">
+                                <option value="">Please select a catalog first</option>
+                            </select>
+                            <br><br>
+                        </div>
+                        <div>
+                            <button disabled>Create Product Set</button>
+                        </div>
                     </div>
-                    <div>
-                        <button disabled>Create Product Set</button>
-                    </div>
+                </div>
+
+                <!-- Live Product Preview -->
+                <div id="product-list-container">
+                    <ul id="product_list" style="margin: 0; padding-left: 20px;"></ul>
                 </div>
             </div>
 
-            <!-- Live Product Preview -->
-            <div id="product-list-container">
-                <ul id="product_list" style="margin: 0; padding-left: 20px;"></ul>
-            </div>
-            </div>
 <hr>
 
             <!-- Daily Budget -->
