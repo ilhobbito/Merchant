@@ -1,11 +1,14 @@
-console.log("creative-handler.js loaded!")
+// creative-handler.js — Manages dynamic behavior for Ad Creative form step
+console.log("creative-handler.js loaded!");
 
-const objective = window.adWizardObjective;
+const objective = window.adWizardObjective; // Read campaign objective passed from PHP
 const ctaDescriptionBox = document.getElementById("cta-description-box");
 const ctaList = document.getElementById("call_to_action");
-console.log(objective);
 
-switch(objective){
+console.log("Objective:", objective);
+
+// Populate CTA options based on selected campaign objective
+switch (objective) {
     case "OUTCOME_TRAFFIC":
         ctaList.innerHTML = `
             <option value="LEARN_MORE">Learn More</option>
@@ -19,30 +22,33 @@ switch(objective){
         break;
 }
 
-ctaList.addEventListener('change', function(){
+// Update CTA description when selection changes
+ctaList.addEventListener('change', function () {
     setCTADescription(this.value);
-})
+});
 
+// Trigger initial description update on page load
 document.addEventListener('DOMContentLoaded', function () {
     ctaList.dispatchEvent(new Event('change'));
 });
 
-function setCTADescription(value){
-    switch(value){
+// Helper: Provide a dynamic explanation for the selected call-to-action
+function setCTADescription(value) {
+    switch (value) {
         case "LEARN_MORE":
             ctaDescriptionBox.innerHTML = `
-            <strong>Learn More</strong> means that the user will be sent to an informational page. This is good for when you want to interest a user first with methods like
-            blog posts or case studies.`;
+                <strong>Learn More</strong> sends the user to a page with more information.
+                Ideal for educational content, blog posts, or case studies.`;
             break;
         case "SHOP_NOW":
             ctaDescriptionBox.innerHTML = `
-            <strong>Shop Now</strong> means that the user will be directed straight to your product or page. This is good for when
-            you want to encourage the user to make immediate online purchases`;
+                <strong>Shop Now</strong> directs the user to your store or product page.
+                Great for promoting product discovery and encouraging immediate purchases.`;
             break;
         case "BUY_NOW":
             ctaDescriptionBox.innerHTML = `
-            <strong>Buy Now</strong> means that the user will be taken to a checkout or product page with the intent to complete a purchase right away. This is good for
-            time sensitive offers or when your product has a strong impulse appeal`;
+                <strong>Buy Now</strong> leads directly to a checkout or product detail page.
+                Best used for limited-time offers or impulse-driven conversions.`;
             break;
     }
 }
